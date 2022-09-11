@@ -1,0 +1,10 @@
+# dependencies
+/backend/node_modules
+/frontend/node_modules
+
+# env
+/backend/.env
+
+# contract
+/backend/artifacts
+/backend/cache

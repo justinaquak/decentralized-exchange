@@ -41,13 +41,9 @@ contract Dex {
 
   // Add Token into tokenStore
   function addToken(string memory _symbolName, address _contractAddress) public returns (uint) {
-     TokenStore storage tokenStore;
-     tokenStore.contractAddress = _contractAddress;
-     tokenStore.symbolName = _symbolName;
-     tokenStore.sellOrderBook = new OrderBook;
-     tokenStore.buyOrderBook = new OrderBook;
-     tokenStore.orderCount = 0;
-     tokenStores[tokenIndex] = tokenStore;
+     tokenStores[tokenIndex].contractAddress = _contractAddress;
+     tokenStores[tokenIndex].symbolName = _symbolName;
+     tokenStores[tokenIndex].orderCount = 0;
      
      reverseTokenStore[_symbolName] = tokenIndex;
      tokenIndex++;
@@ -79,21 +75,15 @@ contract Dex {
   }
 
   function createBuyOrder(uint buySymbolIndex, uint orderIndex, string memory buySymbol, uint buyAmount) public {
-    MarketOrder memory currMarketOrder;
-    currMarketOrder.symbol = buySymbol;
-    currMarketOrder.amount = buyAmount;
-    currMarketOrder.owner = msg.sender;
-    
-    tokenStores[buySymbolIndex].buyOrderBook[orderIndex] = currMarketOrder;
+    tokenStores[buySymbolIndex].buyOrderBook.marketOrders[orderIndex].symbol = buySymbol;
+    tokenStores[buySymbolIndex].buyOrderBook.marketOrders[orderIndex].amount = buyAmount;
+    tokenStores[buySymbolIndex].buyOrderBook.marketOrders[orderIndex].owner = msg.sender;
   }
 
   function createSellOrder(uint buySymbolIndex, uint orderIndex, string memory buySymbol, string memory sellSymbol, uint sellAmount) public {
-    MarketOrder memory currMarketOrder;
-    currMarketOrder.symbol = sellAmount;
-    currMarketOrder.amount = sellAmount;
-    currMarketOrder.owner = msg.sender;
-    
-    tokenStores[buySymbolIndex].sellOrderBook[orderIndex] = currMarketOrder;
+    tokenStores[buySymbolIndex].sellOrderBook.marketOrders[orderIndex].symbol = sellSymbol;
+    tokenStores[buySymbolIndex].sellOrderBook.marketOrders[orderIndex].amount = sellAmount;
+    tokenStores[buySymbolIndex].sellOrderBook.marketOrders[orderIndex].owner = msg.sender;
   }
 
   function buy() payable public {

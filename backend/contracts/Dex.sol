@@ -70,7 +70,7 @@ contract Dex {
     uint buySymbolIndex = reverseTokenStore[buySymbol];
     uint orderIndex = tokenStores[buySymbolIndex].orderCount;
     createBuyOrder(buySymbolIndex, orderIndex, buySymbol, buyAmount);
-    createSellOrder(buySymbolIndex, orderIndex, buySymbol, sellSymbol, sellAmount);
+    createSellOrder(buySymbolIndex, orderIndex, sellSymbol, sellAmount);
     tokenStores[buySymbolIndex].orderCount++;
   }
 
@@ -80,7 +80,7 @@ contract Dex {
     tokenStores[buySymbolIndex].buyOrderBook.marketOrders[orderIndex].owner = msg.sender;
   }
 
-  function createSellOrder(uint buySymbolIndex, uint orderIndex, string memory buySymbol, string memory sellSymbol, uint sellAmount) public {
+  function createSellOrder(uint buySymbolIndex, uint orderIndex, string memory sellSymbol, uint sellAmount) public {
     tokenStores[buySymbolIndex].sellOrderBook.marketOrders[orderIndex].symbol = sellSymbol;
     tokenStores[buySymbolIndex].sellOrderBook.marketOrders[orderIndex].amount = sellAmount;
     tokenStores[buySymbolIndex].sellOrderBook.marketOrders[orderIndex].owner = msg.sender;

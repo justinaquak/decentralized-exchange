@@ -1,10 +1,10 @@
 const hre = require('hardhat')
-const interact = require('./interact')
+// const interact = require('./interact')
 
 async function contractCreateLogic(req, res) {
   const preResponse = async () => {
     const contract = await hre.ethers.getContractFactory('Dex')
-    const awaitDeploy = await contract.deploy()
+    const awaitDeploy = await contract.deploy("Test1", "TNTLOL1")
     await awaitDeploy.deployed()
     return awaitDeploy.address
   }
@@ -19,16 +19,10 @@ async function contractCreateLogic(req, res) {
 
 async function contractInteractLogic(req, res) {
   const preResponse = async () => {
-    const myContract = await hre.ethers.getContractAt('Dex', '0xDAbFe433403C27bF2CD02f4F6b0e8703D5A220e8')
-
-    const name = await myContract.getName()
-    const symbol = await myContract.getSymbol()
-    const supply = await myContract.getTotalSupply()
-    const balance = await myContract.balance('0xF28F80606a22149fd3f123efd7A18c6fbA32bE45')
-    const buyer = await hre.ethers.getSigner('0x0FA7AC60db6596d0cD1e6D49C6FCe5f05f0F9B39')
-
-    const buy = await myContract.connect(test).buy({value: 1e9})
-    console.log(buy)
+    // const myContract = await hre.ethers.getContractAt('Dex', '0x2aEaFB7d02bE94539F1c2471B064Bbdf5C0B1B86')
+    // const buyer = await hre.ethers.getSigner('0x299127084517507488613Ca5CC0A22F6230495E7')
+    // const buy = await myContract.connect(buyer).buy({value: 1e9})
+    // console.log(buy)
   }
 
   try {
@@ -41,10 +35,16 @@ async function contractInteractLogic(req, res) {
 
 async function contractCreateToken(req, res) {
   const preResponse = async () => {
-    const contract = await hre.ethers.getContractFactory('Token')
-    const awaitDeploy = await contract.deploy("Test1", "TNTLOL1")
-    await awaitDeploy.deployed()
-    return awaitDeploy.address
+    const gold = await hre.ethers.getContractFactory('GOLD')
+    const silver = await hre.ethers.getContractFactory('SILVER')
+    const bronze = await hre.ethers.getContractFactory('BRONZE')
+    const deployGold = await gold.deploy()
+    const deploySilver = await silver.deploy()
+    const deployBronze = await bronze.deploy()
+    await deployGold.deployed()
+    await deploySilver.deployed()
+    await deployBronze.deployed()
+    return [ deployGold.address, deploySilver.address, deployBronze.address ]
   }
 
   try {

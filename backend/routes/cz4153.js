@@ -1,12 +1,18 @@
 const hre = require('hardhat')
 // const interact = require('./interact')
 
+const contractAddress = '0xAAd2f2e899EE89a8A11027A3122Ba46E2EF350EA'
+const ownerAddress = '0x299127084517507488613Ca5CC0A22F6230495E7'
+const goldAddress = "0xa15916E98DA69A24c3FD2e9Da6b03bB8351D15f9"
+const silverAddress = "0x3890448215221940163C75fd757Cc17DFD22b2CD"
+const bronzeAddress = "0x74Af70ea185F201c6283d725473AaB2De7b6775c"
+
 async function contractCreateLogic(req, res) {
   const preResponse = async () => {
     const contract = await hre.ethers.getContractFactory('Dex')
-    const awaitDeploy = await contract.deploy("Test1", "TNTLOL1")
-    await awaitDeploy.deployed()
-    return awaitDeploy.address
+    const deployContract = await contract.deploy()
+    await deployContract.deployed()
+    return deployContract.address
   }
 
   try {
@@ -19,19 +25,23 @@ async function contractCreateLogic(req, res) {
 
 async function contractInteractLogic(req, res) {
   const preResponse = async () => {
-    // const myContract = await hre.ethers.getContractAt('Dex', '0x2aEaFB7d02bE94539F1c2471B064Bbdf5C0B1B86')
-    // const buyer = await hre.ethers.getSigner('0x299127084517507488613Ca5CC0A22F6230495E7')
-    // const buy = await myContract.connect(buyer).buy({value: 1e9})
-    // console.log(buy)
+    const dexContract = await hre.ethers.getContractAt('Dex', contractAddress)
+    const owner = await hre.ethers.getSigner(ownerAddress)
+    const feedback = await dexContract.connect(owner).buy()
+    console.log(feedback)
+    // const test = await feedback.wait()
+    // console.log(test.events)
+    return feedback
   }
 
   try {
     await preResponse()
-    res.code(200).header('Content-Type', 'application/json; charset=utf-8')
+    res.code(200).header('Content-Type', 'application/json; charset=utf-8').send({ feedback: events })
   } catch (err) {
     res.code(400).send(err)
   }
 }
+
 
 async function contractCreateToken(req, res) {
   const preResponse = async () => {
@@ -55,6 +65,25 @@ async function contractCreateToken(req, res) {
   }
 }
 
+async function contractInteractToken(req, res) {
+  const preResponse = async () => {
+    const goldContract = await hre.ethers.getContractAt('GOLD', goldAddress)
+    const owner = await hre.ethers.getSigner("0xdC950e7c5946d787b8eF7a34b14686f2498D7347")
+    const feedback = await goldContract.connect(owner).transferFrom(goldAddress, "0xdC950e7c5946d787b8eF7a34b14686f2498D7347", 100000)
+    console.log(feedback)
+    // const test = await feedback.wait()
+    // console.log(test.events)
+    return feedback
+  }
+
+  try {
+    await preResponse()
+    res.code(200).header('Content-Type', 'application/json; charset=utf-8').send({ feedback: events })
+  } catch (err) {
+    res.code(400).send(err)
+  }
+}
+
 async function fyp_smartcontract(fastify, options) {
   fastify.post('/contract/create', async (request, reply) => {
     await contractCreateLogic(request, reply)
@@ -64,6 +93,12 @@ async function fyp_smartcontract(fastify, options) {
   })
   fastify.post('/contract/token', async (request, reply) => {
     await contractCreateToken(request, reply)
+  })
+  fastify.post('/contract/interactToken', async (request, reply) => {
+    await contractInteractToken(request, reply)
+  })
+  fastify.post('/contract/fake', async (request, reply) => {
+    await contractInteractToken(request, reply)
   })
 }
 

@@ -11,8 +11,8 @@ module.exports = {
     goerli: {
       url: `https://goerli.infura.io/v3/1d4b501412e44aae912bbcd054bba9c6`,
       accounts: [process.env.META_PRIVATE_KEY_1, process.env.META_PRIVATE_KEY_2],
-      gas: 2100000,
-      gasPrice: 8000000000,
+      gas: 21000,
+      gasPrice: 1e9,
     },
     ropsten: {
       url: `https://ropsten.infura.io/v3/1d4b501412e44aae912bbcd054bba9c6`,

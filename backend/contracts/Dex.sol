@@ -497,6 +497,33 @@ contract Dex {
             }
             counter = loadedToken.buyOrderBook[_price].orders[counter].lowerPriority;
         }
+
+        uint256 lowerPricePointer = loadedToken.buyOrderBook[_price].lowerPrice;
+        uint256 higherPricePointer = loadedToken.buyOrderBook[_price].higherPrice;
+
+        if (loadedToken.buyOrderBook[_price].numOfOrders == 0 && totalOffers > 0) {
+            // if no. of offers for this price is 0, this price is empty, remove this order book
+            if (lowerPricePointer == 0 && higherPricePointer == _price) {
+                // if this is the only price left
+                loadedToken.buyOrderBook[_price].numOfOrders = 0;
+                clearOrderBook(_token, _price, false);
+            } else if (lowerPricePointer == 0) {
+                // if this is the first price in order book list
+                loadedToken.buyOrderBook[higherPricePointer].lowerPrice = 0;
+                loadedToken.minBuyPrice = higherPricePointer;
+                loadedToken.numOfBuyPrices = loadedToken.numOfBuyPrices.sub(1);
+            } else if (higherPricePointer == _price) {
+                // if this is the last price in order book list
+                loadedToken.buyOrderBook[lowerPricePointer].higherPrice = lowerPricePointer;
+                loadedToken.maxBuyPrice = lowerPricePointer;
+                loadedToken.numOfBuyPrices = loadedToken.numOfBuyPrices.sub(1);
+            } else {
+                // if we are in between order book list
+                loadedToken.buyOrderBook[lowerPricePointer].higherPrice = higherPricePointer;
+                loadedToken.buyOrderBook[higherPricePointer].lowerPrice = lowerPricePointer;
+                loadedToken.numOfBuyPrices = loadedToken.numOfBuyPrices.sub(1);
+            }
+        }
     }
 
     function removeSellOrder(address _baseToken, address _token, uint256 _price) public {

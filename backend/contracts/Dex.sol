@@ -66,7 +66,7 @@ contract Dex {
                 feedback[2] = true; // insufficient sell orders
                 break;
             }
-            offerPointer = loadedToken.sellOrderBook[buyPrice].highestPriority; // TODO
+            offerPointer = loadedToken.sellOrderBook[buyPrice].highestPriority; 
             while (
                 offerPointer <= loadedToken.sellOrderBook[buyPrice].lowestPriority &&
                 remainingAmount > 0 &&  // while there is still volume to clear
@@ -78,7 +78,7 @@ contract Dex {
                     etherAmount = (volumeAtPointer.mul(buyPrice)).div(1e18);
 
                     if (getTokenBalance(msg.sender, _baseToken) >= etherAmount) { // sufficient ether
-                        approveAndExchangeBuy(baseToken, token, etherAmount, loadedToken.sellOrderBook[buyPrice].orders[offerPointer].owner, volumeAtPointer);
+                        approveAndExchangeTokens(baseToken, token, etherAmount, loadedToken.sellOrderBook[buyPrice].orders[offerPointer].owner, volumeAtPointer);
                         
                         loadedToken.sellOrderBook[buyPrice].orders[offerPointer].amount = 0;
 
@@ -92,7 +92,7 @@ contract Dex {
                 } else { // current offer's volume > order's volume
                     etherAmount = (remainingAmount.mul(buyPrice)).div(1e18);
                     if (getTokenBalance(msg.sender, _baseToken) >= etherAmount) { // sufficient ether
-                        approveAndExchangeBuy(baseToken, token, etherAmount, loadedToken.sellOrderBook[buyPrice].orders[offerPointer].owner, volumeAtPointer);
+                        approveAndExchangeTokens(baseToken, token, etherAmount, loadedToken.sellOrderBook[buyPrice].orders[offerPointer].owner, volumeAtPointer);
                         // remove the volume bought from the offer
                         loadedToken.sellOrderBook[buyPrice].orders[offerPointer].amount.sub(remainingAmount);
                         remainingAmount = 0;
@@ -106,11 +106,7 @@ contract Dex {
                     loadedToken.numOfSellPrices = loadedToken.numOfSellPrices.sub(1); 
                     loadedToken.sellOrderBook[buyPrice].numOfOrders = 0; // basically some post processing
                     if (buyPrice == loadedToken.sellOrderBook[buyPrice].higherPrice) { // highest price in sell order book, ie orderbook empty
-                        loadedToken.sellOrderBook[buyPrice].higherPrice = 0;
-                        loadedToken.sellOrderBook[buyPrice].lowerPrice = 0;
-                        loadedToken.numOfSellPrices = 0;
-                        loadedToken.maxSellPrice = 0;
-                        loadedToken.minSellPrice = 0;
+                        clearOrderBook(_token, buyPrice, true); // clear sellorderbook at buyprice
                     } else {
                         uint currBuyPriceHigherPrice = loadedToken.sellOrderBook[buyPrice].higherPrice;
                         loadedToken.minSellPrice = currBuyPriceHigherPrice;
@@ -159,7 +155,7 @@ contract Dex {
                 if (volumeAtPointer <= remainingAmount) { // if current offer's volumne is <= order's volume
                     if (getTokenBalance(msg.sender, _token) >= volumeAtPointer) {
                         etherAmount = (volumeAtPointer.mul(sellPrice)).div(1e18);
-                        approveAndExchangeSell(token, baseToken, volumeAtPointer, loadedToken.buyOrderBook[sellPrice].orders[offerPointer].owner, etherAmount);
+                        approveAndExchangeTokens(token, baseToken, volumeAtPointer, loadedToken.buyOrderBook[sellPrice].orders[offerPointer].owner, etherAmount);
                         
                         loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount = 0;
 
@@ -174,7 +170,7 @@ contract Dex {
                 } else { // current offer's volume is more than enough
                     if ((volumeAtPointer.sub(remainingAmount) > 0) && (getTokenBalance(msg.sender, _token) >= remainingAmount)) {
                         etherAmount = (remainingAmount.mul(sellPrice)).div(1e18);
-                        approveAndExchangeSell(token, baseToken, volumeAtPointer, loadedToken.buyOrderBook[sellPrice].orders[offerPointer].owner, etherAmount);
+                        approveAndExchangeTokens(token, baseToken, volumeAtPointer, loadedToken.buyOrderBook[sellPrice].orders[offerPointer].owner, etherAmount);
                         
                         loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount = loadedToken.buyOrderBook[sellPrice]
                                                                                                     .orders[offerPointer]
@@ -190,11 +186,7 @@ contract Dex {
                     loadedToken.numOfBuyPrices = loadedToken.numOfBuyPrices.sub(1);
                     loadedToken.buyOrderBook[sellPrice].numOfOrders = 0;
                     if (loadedToken.buyOrderBook[sellPrice].lowerPrice == 0) {
-                        loadedToken.buyOrderBook[sellPrice].higherPrice = 0;
-                        loadedToken.buyOrderBook[sellPrice].lowerPrice = 0;
-                        loadedToken.numOfBuyPrices = 0;
-                        loadedToken.minBuyPrice = 0;
-                        loadedToken.maxBuyPrice = 0;
+                        clearOrderBook(_token, sellPrice, false); // clear buyorderbook at sellprice
                     } else {
                         uint buyOrderBookLowerPrice = loadedToken.buyOrderBook[sellPrice].lowerPrice;
                         loadedToken.maxBuyPrice = buyOrderBookLowerPrice;
@@ -214,18 +206,14 @@ contract Dex {
     }
 
     function buyTokenLimit(address _baseToken, address _token, uint256 _price, uint256 _amount) public returns (bool) {
-        emit SellMarketResult(true, true, true);
         Token storage loadedToken = tokenList[_token];
 
         require(getTokenBalance(msg.sender, _baseToken) >= ((_price.mul(_amount)).div(1e18)), 
                                 "buyTokenLimit: WETH balance is less than ETH required");
 
         if (loadedToken.numOfSellPrices == 0 || loadedToken.minSellPrice > _price) { // no available/suitable sell orders
-            emit BuyMarketResult(true, true, true);
             storeBuyOrder(_token, _price, _amount, msg.sender);
-            emit SellMarketResult(false, false, true);
         } else {
-            emit BuyMarketResult(false, false, false);
             ERC20 baseToken = ERC20(_baseToken); // WETH Token
             ERC20 token = ERC20(_token); // New token
 
@@ -276,11 +264,7 @@ contract Dex {
 
                         if (buyPrice == loadedToken.sellOrderBook[buyPrice].higherPrice ||
                             loadedToken.sellOrderBook[buyPrice].higherPrice == 0 ) {
-                            loadedToken.sellOrderBook[buyPrice].higherPrice = 0;
-                            loadedToken.sellOrderBook[buyPrice].lowerPrice = 0;
-                            loadedToken.numOfSellPrices = 0;
-                            loadedToken.maxSellPrice = 0;
-                            loadedToken.minSellPrice = 0;
+                            clearOrderBook(_token, buyPrice, true); // clear sellorderbook at buyprice
                         } else {
                             uint currBuyPriceHigherPrice = loadedToken.sellOrderBook[buyPrice].higherPrice;
                             loadedToken.minSellPrice = currBuyPriceHigherPrice;
@@ -298,6 +282,8 @@ contract Dex {
         }
         return true;
     }
+
+    
 
     function storeBuyOrder(
         address _token,
@@ -382,27 +368,38 @@ contract Dex {
         }
     }
 
-    function approveAndExchangeBuy(ERC20 baseToken, ERC20 token, uint etherAmount, address owner, uint volumeAtPointer) public {
+    function approveAndExchangeTokens(ERC20 firstToken, ERC20 secToken, uint firstTokenAmt, address owner, uint secTokenAmt) public {
+        // in BUY ORDER: firstToken = weth, secToken = token
+        // in SELL ORDER: firstToken = token, secToken = WETH
         // approve exchange to move token to owner
-        baseToken.approve(msg.sender, address(this), etherAmount); // address(this) is the smart contract itself
+        firstToken.approve(msg.sender, address(this), firstTokenAmt); // address(this) is the smart contract itself
 
-        exchangeTokens(baseToken, token, owner, etherAmount, volumeAtPointer);
+        exchangeTokens(firstToken, secToken, owner, firstTokenAmt, secTokenAmt);
     }
 
-    function approveAndExchangeSell(ERC20 token, ERC20 baseToken, uint volumeAtPointer, address owner, uint etherAmount) public {
-        // approve exchange to move token to owner
-        token.approve(msg.sender, address(this), volumeAtPointer);
-        // send token to owner
-        token.transferFrom(msg.sender, owner, volumeAtPointer);
-        // send weth to owner
-        baseToken.transferFrom(owner, msg.sender, etherAmount);
-    }
-
-    function exchangeTokens(ERC20 baseToken, ERC20 token, address owner, uint etherAmount, uint volumeAtPointer) public {
+    function exchangeTokens(ERC20 firstToken, ERC20 secToken, address owner, uint firstTokenAmt, uint secTokenAmt) public {
         // send weth to maker
-        baseToken.transferFrom(msg.sender, owner, etherAmount);
+        firstToken.transferFrom(msg.sender, owner, firstTokenAmt);
         // send token to owner
-        token.transferFrom(owner, msg.sender, volumeAtPointer);
+        secToken.transferFrom(owner, msg.sender, secTokenAmt);
+    }
+
+    function clearOrderBook(address _token, uint price, bool isBuy) public {
+        Token storage loadedToken = tokenList[_token];
+
+        if (isBuy) {
+            loadedToken.sellOrderBook[price].higherPrice = 0;
+            loadedToken.sellOrderBook[price].lowerPrice = 0;
+            loadedToken.numOfSellPrices = 0;
+            loadedToken.maxSellPrice = 0;
+            loadedToken.minSellPrice = 0;
+        } else {
+            loadedToken.buyOrderBook[price].higherPrice = 0;
+            loadedToken.buyOrderBook[price].lowerPrice = 0;
+            loadedToken.numOfBuyPrices = 0;
+            loadedToken.minBuyPrice = 0;
+            loadedToken.maxBuyPrice = 0;
+        }
     }
 
     function retrieveTokenPriceInfo(address tokenAddress) public view returns (uint256[] memory) {

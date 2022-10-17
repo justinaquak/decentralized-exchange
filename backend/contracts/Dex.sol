@@ -351,268 +351,246 @@ contract Dex {
     } 
 
     function storeBuyOrder(address _token, uint256 _price, uint256 _amount, address _owner) private {
-        Token storage loadedToken = tokenList[_token];
-        loadedToken.buyOrderBook[_price].numOfOrders = loadedToken.buyOrderBook[_price].numOfOrders.add(1);
-        uint currNumberOfOrders = loadedToken.buyOrderBook[_price].numOfOrders;
+        tokenList[_token].buyOrderBook[_price].numOfOrders = tokenList[_token].buyOrderBook[_price].numOfOrders.add(1);
+        uint currNumberOfOrders = tokenList[_token].buyOrderBook[_price].numOfOrders;
 
         if (currNumberOfOrders == 1) { // this new order is the first order of this price
-            loadedToken.buyOrderBook[_price].highestPriority = 1;
-            loadedToken.buyOrderBook[_price].lowestPriority = 1;
-            loadedToken.numOfBuyPrices = loadedToken.numOfBuyPrices.add(1);
-            loadedToken.buyOrderBook[_price].orders[currNumberOfOrders] = Order(_amount, _owner, 0, 1);
+            tokenList[_token].buyOrderBook[_price].highestPriority = 1;
+            tokenList[_token].buyOrderBook[_price].lowestPriority = 1;
+            tokenList[_token].numOfBuyPrices = tokenList[_token].numOfBuyPrices.add(1);
+            tokenList[_token].buyOrderBook[_price].orders[currNumberOfOrders] = Order(_amount, _owner, 0, 1);
 
-            uint256 currentBuyPrice = loadedToken.maxBuyPrice;
-            uint256 lowestBuyPrice = loadedToken.minBuyPrice;
+            uint256 currentBuyPrice = tokenList[_token].maxBuyPrice;
+            uint256 lowestBuyPrice = tokenList[_token].minBuyPrice;
 
             if (lowestBuyPrice == 0 || lowestBuyPrice > _price) { // need to make lowestBuyPrice = _price
                 if (currentBuyPrice == 0) { // ie no orders at all
-                    loadedToken.maxBuyPrice = _price;
-                    loadedToken.buyOrderBook[_price].higherPrice = _price; // oooo SETTING THE POINTERS
-                    loadedToken.buyOrderBook[_price].lowerPrice = 0; // if it is the lowest price, the LP pointer will point to 0
+                    tokenList[_token].maxBuyPrice = _price;
+                    tokenList[_token].buyOrderBook[_price].higherPrice = _price; // oooo SETTING THE POINTERS
+                    tokenList[_token].buyOrderBook[_price].lowerPrice = 0; // if it is the lowest price, the LP pointer will point to 0
                 } else { // have orders, but this price is the new minimum
-                    loadedToken.buyOrderBook[lowestBuyPrice].lowerPrice = _price;
-                    loadedToken.buyOrderBook[_price].higherPrice = lowestBuyPrice;
-                    loadedToken.buyOrderBook[_price].lowerPrice = 0;
+                    tokenList[_token].buyOrderBook[lowestBuyPrice].lowerPrice = _price;
+                    tokenList[_token].buyOrderBook[_price].higherPrice = lowestBuyPrice;
+                    tokenList[_token].buyOrderBook[_price].lowerPrice = 0;
                 }
-                loadedToken.minBuyPrice = _price;
+                tokenList[_token].minBuyPrice = _price;
             } else if (currentBuyPrice < _price) { // price is higher than the current maxBuyPrice
-                loadedToken.buyOrderBook[currentBuyPrice].higherPrice = _price;
-                loadedToken.buyOrderBook[_price].higherPrice = _price; // if it is the highest price, the HP pointer will point to the same price
-                loadedToken.buyOrderBook[_price].lowerPrice = currentBuyPrice;
-                loadedToken.maxBuyPrice = _price;
+                tokenList[_token].buyOrderBook[currentBuyPrice].higherPrice = _price;
+                tokenList[_token].buyOrderBook[_price].higherPrice = _price; // if it is the highest price, the HP pointer will point to the same price
+                tokenList[_token].buyOrderBook[_price].lowerPrice = currentBuyPrice;
+                tokenList[_token].maxBuyPrice = _price;
             } else { // price is in between minBuyPrice and maxBuyPrice
-                uint256 buyPrice = loadedToken.maxBuyPrice; // starts off at the highest price
+                uint256 buyPrice = tokenList[_token].maxBuyPrice; // starts off at the highest price
                 bool finished = false;
                 while (buyPrice > 0 && !finished) {
                     if (buyPrice < _price && // if price we are at now is < than the price we want to slot in &&
-                        loadedToken.buyOrderBook[buyPrice].higherPrice > _price) { // the next price is > than the price we wanna slot in
+                        tokenList[_token].buyOrderBook[buyPrice].higherPrice > _price) { // the next price is > than the price we wanna slot in
                         // ie price is in between !! found a place to slot in
-                        loadedToken.buyOrderBook[_price].lowerPrice = buyPrice;
-                        loadedToken.buyOrderBook[_price].higherPrice = loadedToken.buyOrderBook[buyPrice].higherPrice;
-                        loadedToken.buyOrderBook[loadedToken.buyOrderBook[buyPrice].higherPrice].lowerPrice = _price;
-                        loadedToken.buyOrderBook[buyPrice].higherPrice = _price;
+                        tokenList[_token].buyOrderBook[_price].lowerPrice = buyPrice;
+                        tokenList[_token].buyOrderBook[_price].higherPrice = tokenList[_token].buyOrderBook[buyPrice].higherPrice;
+                        tokenList[_token].buyOrderBook[tokenList[_token].buyOrderBook[buyPrice].higherPrice].lowerPrice = _price;
+                        tokenList[_token].buyOrderBook[buyPrice].higherPrice = _price;
                         finished = true;
                     }
-                    buyPrice = loadedToken.buyOrderBook[buyPrice].lowerPrice;
+                    buyPrice = tokenList[_token].buyOrderBook[buyPrice].lowerPrice;
                 }
             }
         } else { // there are other orders of this price
-            uint256 prevLowest = loadedToken.buyOrderBook[_price].lowestPriority;
+            uint256 prevLowest = tokenList[_token].buyOrderBook[_price].lowestPriority;
             uint256 currentLowest = prevLowest.add(1);
-            loadedToken.buyOrderBook[_price].orders[currentLowest] = Order(_amount, _owner, prevLowest, currentLowest);
-            loadedToken.buyOrderBook[_price].orders[prevLowest].lowerPriority = currentLowest;
-            loadedToken.buyOrderBook[_price].lowestPriority = currentLowest;
+            tokenList[_token].buyOrderBook[_price].orders[currentLowest] = Order(_amount, _owner, prevLowest, currentLowest);
+            tokenList[_token].buyOrderBook[_price].orders[prevLowest].lowerPriority = currentLowest;
+            tokenList[_token].buyOrderBook[_price].lowestPriority = currentLowest;
         }
     }
 
     function storeSellOrder(address _token,uint256 _price,uint256 _amount,address _owner) private {
-        Token storage loadedToken = tokenList[_token];
-        loadedToken.sellOrderBook[_price].numOfOrders = loadedToken.sellOrderBook[_price].numOfOrders.add(1);
-        uint currNumberOfOrders = loadedToken.sellOrderBook[_price].numOfOrders;
+        tokenList[_token].sellOrderBook[_price].numOfOrders = tokenList[_token].sellOrderBook[_price].numOfOrders.add(1);
+        uint currNumberOfOrders = tokenList[_token].sellOrderBook[_price].numOfOrders;
 
         if (currNumberOfOrders == 1) { // this new order is the first order of this price
-            loadedToken.sellOrderBook[_price].highestPriority = 1;
-            loadedToken.sellOrderBook[_price].lowestPriority = 1;
-            loadedToken.numOfSellPrices = loadedToken.numOfSellPrices.add(1);
-            loadedToken.sellOrderBook[_price].orders[currNumberOfOrders] = Order(_amount, _owner, 0, 1);
+            tokenList[_token].sellOrderBook[_price].highestPriority = 1;
+            tokenList[_token].sellOrderBook[_price].lowestPriority = 1;
+            tokenList[_token].numOfSellPrices = tokenList[_token].numOfSellPrices.add(1);
+            tokenList[_token].sellOrderBook[_price].orders[currNumberOfOrders] = Order(_amount, _owner, 0, 1);
 
-            uint256 currentSellPrice = loadedToken.minSellPrice;
-            uint256 highestSellPrice = loadedToken.maxSellPrice;
+            uint256 currentSellPrice = tokenList[_token].minSellPrice;
+            uint256 highestSellPrice = tokenList[_token].maxSellPrice;
 
             if (highestSellPrice == 0 || highestSellPrice < _price) { // need to make maxSellPrice = _price
                 if (currentSellPrice == 0) {
-                    loadedToken.minSellPrice = _price;
-                    loadedToken.sellOrderBook[_price].higherPrice = _price;
-                    loadedToken.sellOrderBook[_price].lowerPrice = 0;
+                    tokenList[_token].minSellPrice = _price;
+                    tokenList[_token].sellOrderBook[_price].higherPrice = _price;
+                    tokenList[_token].sellOrderBook[_price].lowerPrice = 0;
                 } else {
-                    loadedToken.sellOrderBook[highestSellPrice].higherPrice = _price;
-                    loadedToken.sellOrderBook[_price].lowerPrice = highestSellPrice;
-                    loadedToken.sellOrderBook[_price].higherPrice = _price;
+                    tokenList[_token].sellOrderBook[highestSellPrice].higherPrice = _price;
+                    tokenList[_token].sellOrderBook[_price].lowerPrice = highestSellPrice;
+                    tokenList[_token].sellOrderBook[_price].higherPrice = _price;
                 }
-                loadedToken.maxSellPrice = _price;
+                tokenList[_token].maxSellPrice = _price;
             } else if (currentSellPrice > _price) { // _price is lower than current minSellPrice, ie is new minSellPrice
-                loadedToken.sellOrderBook[currentSellPrice].lowerPrice = _price;
-                loadedToken.sellOrderBook[_price].higherPrice = currentSellPrice;
-                loadedToken.sellOrderBook[_price].lowerPrice = 0;
-                loadedToken.minSellPrice = _price;
+                tokenList[_token].sellOrderBook[currentSellPrice].lowerPrice = _price;
+                tokenList[_token].sellOrderBook[_price].higherPrice = currentSellPrice;
+                tokenList[_token].sellOrderBook[_price].lowerPrice = 0;
+                tokenList[_token].minSellPrice = _price;
             } else {
-                uint256 sellPrice = loadedToken.minSellPrice;
+                uint256 sellPrice = tokenList[_token].minSellPrice;
                 bool finished = false;
                 while (sellPrice > 0 && !finished) {
                     if (sellPrice < _price &&
-                        loadedToken.sellOrderBook[sellPrice].higherPrice > _price) {
-                        loadedToken.sellOrderBook[_price].lowerPrice = sellPrice;
-                        loadedToken.sellOrderBook[_price].higherPrice = loadedToken.sellOrderBook[sellPrice].higherPrice;
-                        loadedToken.sellOrderBook[loadedToken.sellOrderBook[sellPrice].higherPrice].lowerPrice = _price;
-                        loadedToken.sellOrderBook[sellPrice].higherPrice = _price;
+                        tokenList[_token].sellOrderBook[sellPrice].higherPrice > _price) {
+                        tokenList[_token].sellOrderBook[_price].lowerPrice = sellPrice;
+                        tokenList[_token].sellOrderBook[_price].higherPrice = tokenList[_token].sellOrderBook[sellPrice].higherPrice;
+                        tokenList[_token].sellOrderBook[tokenList[_token].sellOrderBook[sellPrice].higherPrice].lowerPrice = _price;
+                        tokenList[_token].sellOrderBook[sellPrice].higherPrice = _price;
                         finished = true;
                     }
-                    sellPrice = loadedToken.sellOrderBook[sellPrice].higherPrice;
+                    sellPrice = tokenList[_token].sellOrderBook[sellPrice].higherPrice;
                 }
             }
         } else { 
-            uint256 prevLowest = loadedToken.sellOrderBook[_price].lowestPriority;
+            uint256 prevLowest = tokenList[_token].sellOrderBook[_price].lowestPriority;
             uint256 currentLowest = prevLowest.add(1);
-            loadedToken.sellOrderBook[_price].orders[currNumberOfOrders] = Order(_amount, _owner, prevLowest, currentLowest);
-            loadedToken.sellOrderBook[_price].orders[prevLowest].lowerPriority = currentLowest;
-            loadedToken.sellOrderBook[_price].lowestPriority = currentLowest;
+            tokenList[_token].sellOrderBook[_price].orders[currNumberOfOrders] = Order(_amount, _owner, prevLowest, currentLowest);
+            tokenList[_token].sellOrderBook[_price].orders[prevLowest].lowerPriority = currentLowest;
+            tokenList[_token].sellOrderBook[_price].lowestPriority = currentLowest;
         }
     }
 
     function removeBuyOrder(address _baseToken, address _token, uint256 _price) public {
-        Token storage loadedToken = tokenList[_token];
         uint256 totalOffers = 0;
         ERC20 baseToken = ERC20(_baseToken);
 
         // remove all offers for this price
-        uint256 counter = loadedToken.buyOrderBook[_price].highestPriority;
-        uint256 lowerPriorityPointer;
-        uint256 higherPriorityPointer;
+        uint256 counter = tokenList[_token].buyOrderBook[_price].highestPriority;
 
-        while (counter <= loadedToken.buyOrderBook[_price].numOfOrders) {
-            if (loadedToken.buyOrderBook[_price].orders[counter].owner == msg.sender) {
-                baseToken.reduceAllowance(msg.sender, address(this), ((loadedToken.sellOrderBook[_price].orders[counter].amount.mul(_price)).div(1e18)));
+        while (counter <= tokenList[_token].buyOrderBook[_price].numOfOrders) {
+            if (tokenList[_token].buyOrderBook[_price].orders[counter].owner == msg.sender) {
+                baseToken.reduceAllowance(msg.sender, address(this), ((tokenList[_token].sellOrderBook[_price].orders[counter].amount.mul(_price)).div(1e18)));
                 totalOffers = totalOffers.add(1);
-                loadedToken.buyOrderBook[_price].numOfOrders = loadedToken.buyOrderBook[_price].numOfOrders.sub(1);
+                tokenList[_token].buyOrderBook[_price].numOfOrders = tokenList[_token].buyOrderBook[_price].numOfOrders.sub(1);
 
-                lowerPriorityPointer = loadedToken.buyOrderBook[_price].orders[counter].lowerPriority;
-                higherPriorityPointer = loadedToken.buyOrderBook[_price].orders[counter].higherPriority;
-
-                if (higherPriorityPointer == 0) {
+                if (tokenList[_token].buyOrderBook[_price].orders[counter].higherPriority == 0) {
                     // if this offer is first in queue
-                    loadedToken.buyOrderBook[_price].highestPriority = lowerPriorityPointer;
-                    loadedToken.buyOrderBook[_price].orders[loadedToken.buyOrderBook[_price].orders[counter].lowerPriority].higherPriority = 0;
-                } else if (lowerPriorityPointer == loadedToken.buyOrderBook[_price].lowestPriority) {
+                    tokenList[_token].buyOrderBook[_price].highestPriority = tokenList[_token].buyOrderBook[_price].orders[counter].lowerPriority;
+                    tokenList[_token].buyOrderBook[_price].orders[tokenList[_token].buyOrderBook[_price].orders[counter].lowerPriority].higherPriority = 0;
+                } else if (tokenList[_token].buyOrderBook[_price].orders[counter].lowerPriority == tokenList[_token].buyOrderBook[_price].lowestPriority) {
                     // if this offer is last in queue
-                    loadedToken.buyOrderBook[_price].lowestPriority = higherPriorityPointer;
-                    loadedToken.buyOrderBook[_price].orders[higherPriorityPointer].lowerPriority = loadedToken.buyOrderBook[_price].lowestPriority;
+                    tokenList[_token].buyOrderBook[_price].lowestPriority = tokenList[_token].buyOrderBook[_price].orders[counter].higherPriority;
+                    tokenList[_token].buyOrderBook[_price].orders[tokenList[_token].buyOrderBook[_price].orders[counter].higherPriority].lowerPriority = tokenList[_token].buyOrderBook[_price].lowestPriority;
                 } else {
                     // if offer is in between orders
-                    loadedToken.buyOrderBook[_price].orders[higherPriorityPointer].lowerPriority = lowerPriorityPointer;
-                    loadedToken.buyOrderBook[_price].orders[lowerPriorityPointer].higherPriority = higherPriorityPointer;
+                    tokenList[_token].buyOrderBook[_price].orders[tokenList[_token].buyOrderBook[_price].orders[counter].higherPriority].lowerPriority = tokenList[_token].buyOrderBook[_price].orders[counter].lowerPriority;
+                    tokenList[_token].buyOrderBook[_price].orders[tokenList[_token].buyOrderBook[_price].orders[counter].lowerPriority].higherPriority = tokenList[_token].buyOrderBook[_price].orders[counter].higherPriority;
                 }
             }
-            if (counter == loadedToken.buyOrderBook[_price].lowestPriority) {
+            if (counter == tokenList[_token].buyOrderBook[_price].lowestPriority) {
                 break;
             }
-            counter = loadedToken.buyOrderBook[_price].orders[counter].lowerPriority;
+            counter = tokenList[_token].buyOrderBook[_price].orders[counter].lowerPriority;
         }
 
-        uint256 lowerPricePointer = loadedToken.buyOrderBook[_price].lowerPrice;
-        uint256 higherPricePointer = loadedToken.buyOrderBook[_price].higherPrice;
-
-        if (loadedToken.buyOrderBook[_price].numOfOrders == 0 && totalOffers > 0) {
+        if (tokenList[_token].buyOrderBook[_price].numOfOrders == 0 && totalOffers > 0) {
             // if no. of offers for this price is 0, this price is empty, remove this order book
-            if (lowerPricePointer == 0 && higherPricePointer == _price) {
+            if (tokenList[_token].buyOrderBook[_price].lowerPrice == 0 && tokenList[_token].buyOrderBook[_price].higherPrice == _price) {
                 // if this is the only price left
-                loadedToken.buyOrderBook[_price].numOfOrders = 0;
+                tokenList[_token].buyOrderBook[_price].numOfOrders = 0;
                 clearOrderBook(_token, _price, false);
-            } else if (lowerPricePointer == 0) {
+            } else if (tokenList[_token].buyOrderBook[_price].lowerPrice == 0) {
                 // if this is the first price in order book list
-                loadedToken.buyOrderBook[higherPricePointer].lowerPrice = 0;
-                loadedToken.minBuyPrice = higherPricePointer;
-                loadedToken.numOfBuyPrices = loadedToken.numOfBuyPrices.sub(1);
-            } else if (higherPricePointer == _price) {
+                tokenList[_token].buyOrderBook[tokenList[_token].buyOrderBook[_price].higherPrice].lowerPrice = 0;
+                tokenList[_token].minBuyPrice = tokenList[_token].buyOrderBook[_price].higherPrice;
+                tokenList[_token].numOfBuyPrices = tokenList[_token].numOfBuyPrices.sub(1);
+            } else if (tokenList[_token].buyOrderBook[_price].higherPrice == _price) {
                 // if this is the last price in order book list
-                loadedToken.buyOrderBook[lowerPricePointer].higherPrice = lowerPricePointer;
-                loadedToken.maxBuyPrice = lowerPricePointer;
-                loadedToken.numOfBuyPrices = loadedToken.numOfBuyPrices.sub(1);
+                tokenList[_token].buyOrderBook[tokenList[_token].buyOrderBook[_price].lowerPrice].higherPrice = tokenList[_token].buyOrderBook[_price].lowerPrice;
+                tokenList[_token].maxBuyPrice = tokenList[_token].buyOrderBook[_price].lowerPrice;
+                tokenList[_token].numOfBuyPrices = tokenList[_token].numOfBuyPrices.sub(1);
             } else {
                 // if we are in between order book list
-                loadedToken.buyOrderBook[lowerPricePointer].higherPrice = higherPricePointer;
-                loadedToken.buyOrderBook[higherPricePointer].lowerPrice = lowerPricePointer;
-                loadedToken.numOfBuyPrices = loadedToken.numOfBuyPrices.sub(1);
+                tokenList[_token].buyOrderBook[tokenList[_token].buyOrderBook[_price].lowerPrice].higherPrice = tokenList[_token].buyOrderBook[_price].higherPrice;
+                tokenList[_token].buyOrderBook[tokenList[_token].buyOrderBook[_price].higherPrice].lowerPrice = tokenList[_token].buyOrderBook[_price].lowerPrice;
+                tokenList[_token].numOfBuyPrices = tokenList[_token].numOfBuyPrices.sub(1);
             }
         }
     }
 
     function removeSellOrder(address _baseToken, address _token, uint256 _price) public {
-        Token storage loadedToken = tokenList[_token];
         uint256 totalOffers = 0;
         ERC20 token = ERC20(_token);
 
         // remove all offers for this price
-        uint256 counter = loadedToken.sellOrderBook[_price].highestPriority;
-        uint256 lowerPriorityPointer;
-        uint256 higherPriorityPointer;
+        uint256 counter = tokenList[_token].sellOrderBook[_price].highestPriority;
 
-        while (counter <= loadedToken.sellOrderBook[_price].lowestPriority) {
-            if (loadedToken.sellOrderBook[_price].orders[counter].owner == msg.sender) {
-                token.reduceAllowance(msg.sender, address(this), loadedToken.sellOrderBook[_price].orders[counter].amount);
+        while (counter <= tokenList[_token].sellOrderBook[_price].lowestPriority) {
+            if (tokenList[_token].sellOrderBook[_price].orders[counter].owner == msg.sender) {
+                token.reduceAllowance(msg.sender, address(this), tokenList[_token].sellOrderBook[_price].orders[counter].amount);
                 totalOffers = totalOffers.add(1);
-                loadedToken.sellOrderBook[_price].numOfOrders = loadedToken.sellOrderBook[_price].numOfOrders.sub(1);
+                tokenList[_token].sellOrderBook[_price].numOfOrders = tokenList[_token].sellOrderBook[_price].numOfOrders.sub(1);
 
-                lowerPriorityPointer = loadedToken.sellOrderBook[_price].orders[counter].lowerPriority;
-                higherPriorityPointer = loadedToken.sellOrderBook[_price].orders[counter].higherPriority;
-
-                if (higherPriorityPointer == 0) {
+                if (tokenList[_token].sellOrderBook[_price].orders[counter].higherPriority == 0) {
                     // if this offer is first in queue                    
-                    loadedToken.sellOrderBook[_price].highestPriority = lowerPriorityPointer;
-                    loadedToken.sellOrderBook[_price].orders[lowerPriorityPointer].higherPriority = 0;
-                } else if (lowerPriorityPointer == loadedToken.sellOrderBook[_price].lowestPriority) {
+                    tokenList[_token].sellOrderBook[_price].highestPriority = tokenList[_token].sellOrderBook[_price].orders[counter].lowerPriority;
+                    tokenList[_token].sellOrderBook[_price].orders[tokenList[_token].sellOrderBook[_price].orders[counter].lowerPriority].higherPriority = 0;
+                } else if (tokenList[_token].sellOrderBook[_price].orders[counter].lowerPriority == tokenList[_token].sellOrderBook[_price].lowestPriority) {
                     // if this offer is the last in queue
-                    loadedToken.sellOrderBook[_price].lowestPriority = loadedToken.sellOrderBook[_price].orders[counter].higherPriority;
-                    loadedToken.sellOrderBook[_price].orders[higherPriorityPointer].lowerPriority = loadedToken.sellOrderBook[_price].lowestPriority;
+                    tokenList[_token].sellOrderBook[_price].lowestPriority = tokenList[_token].sellOrderBook[_price].orders[counter].higherPriority;
+                    tokenList[_token].sellOrderBook[_price].orders[tokenList[_token].sellOrderBook[_price].orders[counter].higherPriority].lowerPriority = tokenList[_token].sellOrderBook[_price].lowestPriority;
                 } else {
-                    //loadedToken.sellBook[_price].offers[counter].amount = 0;
+                    //tokenList[_token].sellBook[_price].offers[counter].amount = 0;
                     // Set lower priority's higherPriority to current higherPriority
-                    loadedToken.sellOrderBook[_price].orders[lowerPriorityPointer].higherPriority = higherPriorityPointer;
+                    tokenList[_token].sellOrderBook[_price].orders[tokenList[_token].sellOrderBook[_price].orders[counter].lowerPriority].higherPriority = tokenList[_token].sellOrderBook[_price].orders[counter].higherPriority;
                     // Set higher priority's lowerPriority to current lowerPriority
-                    loadedToken.sellOrderBook[_price].orders[higherPriorityPointer].lowerPriority = lowerPriorityPointer;
+                    tokenList[_token].sellOrderBook[_price].orders[tokenList[_token].sellOrderBook[_price].orders[counter].higherPriority].lowerPriority = tokenList[_token].sellOrderBook[_price].orders[counter].lowerPriority;
                 }
             }
-            if (counter == loadedToken.sellOrderBook[_price].lowestPriority) {
+            if (counter == tokenList[_token].sellOrderBook[_price].lowestPriority) {
                 break;
             }
-            counter = loadedToken.sellOrderBook[_price].orders[counter].lowerPriority;
+            counter = tokenList[_token].sellOrderBook[_price].orders[counter].lowerPriority;
         } 
 
-        uint256 lowerPricePointer = loadedToken.sellOrderBook[_price].lowerPrice;
-        uint256 higherPricePointer = loadedToken.sellOrderBook[_price].higherPrice;
-
-        if (loadedToken.sellOrderBook[_price].numOfOrders == 0 && totalOffers > 0){
-            if (lowerPricePointer == 0 && higherPricePointer == _price) {
+        if (tokenList[_token].sellOrderBook[_price].numOfOrders == 0 && totalOffers > 0){
+            if (tokenList[_token].sellOrderBook[_price].lowerPrice == 0 && tokenList[_token].sellOrderBook[_price].higherPrice == _price) {
                 // if this is the only price left
-                loadedToken.sellOrderBook[_price].numOfOrders = 0;
+                tokenList[_token].sellOrderBook[_price].numOfOrders = 0;
                 clearOrderBook(_token, _price, true);
-            } else if (lowerPricePointer == 0) {
+            } else if (tokenList[_token].sellOrderBook[_price].lowerPrice == 0) {
                 // if this is the first price in orderbook list
-                loadedToken.sellOrderBook[higherPricePointer].lowerPrice = 0;
-                loadedToken.minSellPrice = higherPricePointer;
-                loadedToken.numOfSellPrices = loadedToken.numOfSellPrices.sub(1);
-            } else if (higherPricePointer == _price){
+                tokenList[_token].sellOrderBook[tokenList[_token].sellOrderBook[_price].higherPrice].lowerPrice = 0;
+                tokenList[_token].minSellPrice = tokenList[_token].sellOrderBook[_price].higherPrice;
+                tokenList[_token].numOfSellPrices = tokenList[_token].numOfSellPrices.sub(1);
+            } else if (tokenList[_token].sellOrderBook[_price].higherPrice == _price){
                 // if this is the last price in the orderbook list
-                loadedToken.sellOrderBook[lowerPricePointer].higherPrice = lowerPricePointer;
-                loadedToken.maxSellPrice = lowerPricePointer;
-                loadedToken.numOfSellPrices = loadedToken.numOfSellPrices.sub(1);
+                tokenList[_token].sellOrderBook[tokenList[_token].sellOrderBook[_price].lowerPrice].higherPrice = tokenList[_token].sellOrderBook[_price].lowerPrice;
+                tokenList[_token].maxSellPrice = tokenList[_token].sellOrderBook[_price].lowerPrice;
+                tokenList[_token].numOfSellPrices = tokenList[_token].numOfSellPrices.sub(1);
             } else {
                 // if we are in between order book list
-                loadedToken.sellOrderBook[lowerPricePointer].higherPrice = higherPricePointer;
-                loadedToken.sellOrderBook[higherPricePointer].lowerPrice = lowerPricePointer;
-                loadedToken.numOfSellPrices = loadedToken.numOfSellPrices.sub(1);
+                tokenList[_token].sellOrderBook[tokenList[_token].sellOrderBook[_price].lowerPrice].higherPrice = tokenList[_token].sellOrderBook[_price].higherPrice;
+                tokenList[_token].sellOrderBook[tokenList[_token].sellOrderBook[_price].higherPrice].lowerPrice = tokenList[_token].sellOrderBook[_price].lowerPrice;
+                tokenList[_token].numOfSellPrices = tokenList[_token].numOfSellPrices.sub(1);
             }
         } 
     }
 
     function getUserSellOrders(address _token) public view returns (uint256[] memory, uint256[] memory) {
-        Token storage loadedToken = tokenList[_token];
-
-        uint256 sellPrice = loadedToken.minSellPrice;
+        uint256 sellPrice = tokenList[_token].minSellPrice;
         uint256 counter = 0;
-        if (loadedToken.minSellPrice > 0) {
-            while (sellPrice <= loadedToken.maxSellPrice) {
-                uint256 offerPointer = loadedToken.sellOrderBook[sellPrice].highestPriority;
+        if (tokenList[_token].minSellPrice > 0) {
+            while (sellPrice <= tokenList[_token].maxSellPrice) {
+                uint256 offerPointer = tokenList[_token].sellOrderBook[sellPrice].highestPriority;
 
-                while (offerPointer <= loadedToken.sellOrderBook[sellPrice].numOfOrders) {
-                    if (loadedToken.sellOrderBook[sellPrice].orders[offerPointer].owner == msg.sender) {
+                while (offerPointer <= tokenList[_token].sellOrderBook[sellPrice].numOfOrders) {
+                    if (tokenList[_token].sellOrderBook[sellPrice].orders[offerPointer].owner == msg.sender) {
                         counter = counter.add(1);
                     }
                     offerPointer = offerPointer.add(1);
                 }
-                if (sellPrice == loadedToken.sellOrderBook[sellPrice].higherPrice) {
+                if (sellPrice == tokenList[_token].sellOrderBook[sellPrice].higherPrice) {
                     break;
                 } else {
-                    sellPrice = loadedToken.sellOrderBook[sellPrice].higherPrice;
+                    sellPrice = tokenList[_token].sellOrderBook[sellPrice].higherPrice;
                 }
             }
         }
@@ -620,19 +598,19 @@ contract Dex {
         uint256[] memory ordersPrices = new uint256[](counter);
         uint256[] memory ordersVolumes = new uint256[](counter);
 
-        sellPrice = loadedToken.minSellPrice;
+        sellPrice = tokenList[_token].minSellPrice;
         counter = 0;
         bool offered;
-        if (loadedToken.minSellPrice > 0) {
-            while (sellPrice <= loadedToken.maxSellPrice) {
+        if (tokenList[_token].minSellPrice > 0) {
+            while (sellPrice <= tokenList[_token].maxSellPrice) {
                 offered = false;
                 uint256 priceVolume = 0;
-                uint256 offerPointer = loadedToken.sellOrderBook[sellPrice].highestPriority;
+                uint256 offerPointer = tokenList[_token].sellOrderBook[sellPrice].highestPriority;
 
-                while (offerPointer <= loadedToken.sellOrderBook[sellPrice].numOfOrders) {
-                    if (loadedToken.sellOrderBook[sellPrice].orders[offerPointer].owner == msg.sender) {
+                while (offerPointer <= tokenList[_token].sellOrderBook[sellPrice].numOfOrders) {
+                    if (tokenList[_token].sellOrderBook[sellPrice].orders[offerPointer].owner == msg.sender) {
                         ordersPrices[counter] = sellPrice;
-                        priceVolume = priceVolume.add(loadedToken.sellOrderBook[sellPrice].orders[offerPointer].amount);
+                        priceVolume = priceVolume.add(tokenList[_token].sellOrderBook[sellPrice].orders[offerPointer].amount);
                         offered = true;
                     }
                     offerPointer = offerPointer.add(1);
@@ -640,10 +618,10 @@ contract Dex {
                 if (offered) {
                     ordersVolumes[counter] = priceVolume;
                 }
-                if (sellPrice == loadedToken.sellOrderBook[sellPrice].higherPrice) {
+                if (sellPrice == tokenList[_token].sellOrderBook[sellPrice].higherPrice) {
                     break;
                 } else {
-                    sellPrice = loadedToken.sellOrderBook[sellPrice].higherPrice;
+                    sellPrice = tokenList[_token].sellOrderBook[sellPrice].higherPrice;
                 }
                 counter = counter.add(1);
             }
@@ -652,25 +630,23 @@ contract Dex {
     }
 
     function getUserBuyOrders(address _token) public view returns (uint256[] memory, uint256[] memory) {
-        Token storage loadedToken = tokenList[_token];
-
-        uint256 buyPrice = loadedToken.minBuyPrice;
+        uint256 buyPrice = tokenList[_token].minBuyPrice;
         uint256 counter = 0;
-        if (loadedToken.maxBuyPrice > 0) {
-            while (buyPrice <= loadedToken.maxBuyPrice) {
-                uint256 offerPointer = loadedToken.buyOrderBook[buyPrice].highestPriority;
+        if (tokenList[_token].maxBuyPrice > 0) {
+            while (buyPrice <= tokenList[_token].maxBuyPrice) {
+                uint256 offerPointer = tokenList[_token].buyOrderBook[buyPrice].highestPriority;
 
-                while (offerPointer <= loadedToken.buyOrderBook[buyPrice].numOfOrders) {
-                    if (loadedToken.buyOrderBook[buyPrice].orders[offerPointer].owner == msg.sender) {
+                while (offerPointer <= tokenList[_token].buyOrderBook[buyPrice].numOfOrders) {
+                    if (tokenList[_token].buyOrderBook[buyPrice].orders[offerPointer].owner == msg.sender) {
                         counter = counter.add(1);
                     }
                     offerPointer = offerPointer.add(1);
                 }
 
-                if (buyPrice == loadedToken.buyOrderBook[buyPrice].higherPrice) {
+                if (buyPrice == tokenList[_token].buyOrderBook[buyPrice].higherPrice) {
                     break;
                 } else {
-                    buyPrice = loadedToken.buyOrderBook[buyPrice].higherPrice;
+                    buyPrice = tokenList[_token].buyOrderBook[buyPrice].higherPrice;
                 }
             }
         }
@@ -678,21 +654,21 @@ contract Dex {
         uint256[] memory ordersPrices = new uint256[](counter);
         uint256[] memory ordersVolumes = new uint256[](counter);
 
-        buyPrice = loadedToken.minBuyPrice;
+        buyPrice = tokenList[_token].minBuyPrice;
         counter = 0;
         bool offered;
 
-        if (loadedToken.maxBuyPrice > 0) {
-            while (buyPrice <= loadedToken.maxBuyPrice) {
+        if (tokenList[_token].maxBuyPrice > 0) {
+            while (buyPrice <= tokenList[_token].maxBuyPrice) {
                 offered = false;
 
                 uint256 priceVolume = 0;
-                uint256 offerPointer = loadedToken.buyOrderBook[buyPrice].highestPriority;
+                uint256 offerPointer = tokenList[_token].buyOrderBook[buyPrice].highestPriority;
 
-                while (offerPointer <= loadedToken.buyOrderBook[buyPrice].numOfOrders) {
-                    if (loadedToken.buyOrderBook[buyPrice].orders[offerPointer].owner == msg.sender) {
+                while (offerPointer <= tokenList[_token].buyOrderBook[buyPrice].numOfOrders) {
+                    if (tokenList[_token].buyOrderBook[buyPrice].orders[offerPointer].owner == msg.sender) {
                         ordersPrices[counter] = buyPrice;
-                        priceVolume = priceVolume.add(loadedToken.buyOrderBook[buyPrice].orders[offerPointer].amount);
+                        priceVolume = priceVolume.add(tokenList[_token].buyOrderBook[buyPrice].orders[offerPointer].amount);
                         offered = true;
                     }
                     offerPointer = offerPointer.add(1);
@@ -701,10 +677,10 @@ contract Dex {
                     ordersVolumes[counter] = priceVolume;
                 }
 
-                if (buyPrice == loadedToken.buyOrderBook[buyPrice].higherPrice) {
+                if (buyPrice == tokenList[_token].buyOrderBook[buyPrice].higherPrice) {
                     break;
                 } else {
-                    buyPrice = loadedToken.buyOrderBook[buyPrice].higherPrice;
+                    buyPrice = tokenList[_token].buyOrderBook[buyPrice].higherPrice;
                 }
                 counter = counter.add(1);
             }
@@ -714,23 +690,21 @@ contract Dex {
     }
 
     function getSellOrders(address _token) public view returns (uint256[] memory, uint256[] memory) {
-        Token storage loadedToken = tokenList[_token];
-
-        uint256 sellPrice = loadedToken.minSellPrice;
+        uint256 sellPrice = tokenList[_token].minSellPrice;
         uint256 counter = 0;
 
-        if (loadedToken.minSellPrice > 0) {
-            while (sellPrice <= loadedToken.maxSellPrice) {
-                uint256 offerPointer = loadedToken.sellOrderBook[sellPrice].highestPriority;
+        if (tokenList[_token].minSellPrice > 0) {
+            while (sellPrice <= tokenList[_token].maxSellPrice) {
+                uint256 offerPointer = tokenList[_token].sellOrderBook[sellPrice].highestPriority;
 
-                while (offerPointer <= loadedToken.sellOrderBook[sellPrice].numOfOrders) {
+                while (offerPointer <= tokenList[_token].sellOrderBook[sellPrice].numOfOrders) {
                     offerPointer = offerPointer.add(1);
                     counter = counter.add(1);
                 }
-                if (sellPrice == loadedToken.sellOrderBook[sellPrice].higherPrice) {
+                if (sellPrice == tokenList[_token].sellOrderBook[sellPrice].higherPrice) {
                     break;
                 } else {
-                    sellPrice = loadedToken.sellOrderBook[sellPrice].higherPrice;
+                    sellPrice = tokenList[_token].sellOrderBook[sellPrice].higherPrice;
                 }
             }
         }
@@ -738,29 +712,29 @@ contract Dex {
         uint256[] memory ordersPrices = new uint256[](counter);
         uint256[] memory ordersVolumes = new uint256[](counter);
 
-        sellPrice = loadedToken.minSellPrice;
+        sellPrice = tokenList[_token].minSellPrice;
         counter = 0;
 
-        if (loadedToken.minSellPrice > 0) {
-            while (sellPrice <= loadedToken.maxSellPrice) {
+        if (tokenList[_token].minSellPrice > 0) {
+            while (sellPrice <= tokenList[_token].maxSellPrice) {
                 // uint256 priceVolume = 0;
-                uint256 offerPointer = loadedToken.sellOrderBook[sellPrice].highestPriority;
+                uint256 offerPointer = tokenList[_token].sellOrderBook[sellPrice].highestPriority;
 
-                while (offerPointer <= loadedToken.sellOrderBook[sellPrice].numOfOrders) {
+                while (offerPointer <= tokenList[_token].sellOrderBook[sellPrice].numOfOrders) {
                     // priceVolume = priceVolume.add(
-                    //     loadedToken.sellOrderBook[sellPrice].offers[offerPointer]
+                    //     tokenList[_token].sellOrderBook[sellPrice].offers[offerPointer]
                     //         .amount
                     // );
 
                     ordersPrices[counter] = sellPrice;
-                    ordersVolumes[counter] = loadedToken.sellOrderBook[sellPrice].orders[offerPointer].amount;
+                    ordersVolumes[counter] = tokenList[_token].sellOrderBook[sellPrice].orders[offerPointer].amount;
                     offerPointer = offerPointer.add(1);
                     counter = counter.add(1);
                 }
-                if (sellPrice == loadedToken.sellOrderBook[sellPrice].higherPrice) {
+                if (sellPrice == tokenList[_token].sellOrderBook[sellPrice].higherPrice) {
                     break;
                 } else {
-                    sellPrice = loadedToken.sellOrderBook[sellPrice].higherPrice;
+                    sellPrice = tokenList[_token].sellOrderBook[sellPrice].higherPrice;
                 }
             }
         }
@@ -768,55 +742,53 @@ contract Dex {
     }
 
     function getBuyOrders(address _token) public view returns (uint256[] memory, uint256[] memory) {
-        Token storage loadedToken = tokenList[_token];
-
-        uint256 buyPrice = loadedToken.minBuyPrice;
+        uint256 buyPrice = tokenList[_token].minBuyPrice;
         uint256 counter = 0;
 
-        if (loadedToken.maxBuyPrice > 0) {
-            while (buyPrice <= loadedToken.maxBuyPrice) {
-                uint256 offerPointer = loadedToken.buyOrderBook[buyPrice].highestPriority;
+        if (tokenList[_token].maxBuyPrice > 0) {
+            while (buyPrice <= tokenList[_token].maxBuyPrice) {
+                uint256 offerPointer = tokenList[_token].buyOrderBook[buyPrice].highestPriority;
 
-                while (offerPointer <= loadedToken.buyOrderBook[buyPrice].numOfOrders) {
+                while (offerPointer <= tokenList[_token].buyOrderBook[buyPrice].numOfOrders) {
                     counter = counter.add(1);
                     offerPointer = offerPointer.add(1);
                 }
 
-                if (buyPrice == loadedToken.buyOrderBook[buyPrice].higherPrice) {
+                if (buyPrice == tokenList[_token].buyOrderBook[buyPrice].higherPrice) {
                     break;
                 } else {
-                    buyPrice = loadedToken.buyOrderBook[buyPrice].higherPrice;
+                    buyPrice = tokenList[_token].buyOrderBook[buyPrice].higherPrice;
                 }
             }
         }
         uint256[] memory ordersPrices = new uint256[](counter);
         uint256[] memory ordersVolumes = new uint256[](counter);
 
-        buyPrice = loadedToken.minBuyPrice;
+        buyPrice = tokenList[_token].minBuyPrice;
         counter = 0;
 
-        if (loadedToken.maxBuyPrice > 0) {
-            while (buyPrice <= loadedToken.maxBuyPrice) {
+        if (tokenList[_token].maxBuyPrice > 0) {
+            while (buyPrice <= tokenList[_token].maxBuyPrice) {
                 // uint256 priceVolume = 0;
-                uint256 offerPointer = loadedToken.buyOrderBook[buyPrice].highestPriority;
+                uint256 offerPointer = tokenList[_token].buyOrderBook[buyPrice].highestPriority;
 
-                while (offerPointer <= loadedToken.buyOrderBook[buyPrice].numOfOrders) {
+                while (offerPointer <= tokenList[_token].buyOrderBook[buyPrice].numOfOrders) {
                     // priceVolume = priceVolume.add(
-                    //     loadedToken.buyOrderBook[buyPrice].offers[offerPointer]
+                    //     tokenList[_token].buyOrderBook[buyPrice].offers[offerPointer]
                     //         .amount
                     // );
 
                     ordersPrices[counter] = buyPrice;
-                    ordersVolumes[counter] = loadedToken.buyOrderBook[buyPrice].orders[offerPointer].amount;
+                    ordersVolumes[counter] = tokenList[_token].buyOrderBook[buyPrice].orders[offerPointer].amount;
 
                     counter = counter.add(1);
                     offerPointer = offerPointer.add(1);
                 }
 
-                if (buyPrice == loadedToken.buyOrderBook[buyPrice].higherPrice) {
+                if (buyPrice == tokenList[_token].buyOrderBook[buyPrice].higherPrice) {
                     break;
                 } else {
-                    buyPrice = loadedToken.buyOrderBook[buyPrice].higherPrice;
+                    buyPrice = tokenList[_token].buyOrderBook[buyPrice].higherPrice;
                 }
             }
         }
@@ -873,20 +845,18 @@ contract Dex {
     }
 
     function clearOrderBook(address _token, uint price, bool isBuy) public {
-        Token storage loadedToken = tokenList[_token];
-
         if (isBuy) {
-            loadedToken.sellOrderBook[price].higherPrice = 0;
-            loadedToken.sellOrderBook[price].lowerPrice = 0;
-            loadedToken.numOfSellPrices = 0;
-            loadedToken.maxSellPrice = 0;
-            loadedToken.minSellPrice = 0;
+            tokenList[_token].sellOrderBook[price].higherPrice = 0;
+            tokenList[_token].sellOrderBook[price].lowerPrice = 0;
+            tokenList[_token].numOfSellPrices = 0;
+            tokenList[_token].maxSellPrice = 0;
+            tokenList[_token].minSellPrice = 0;
         } else {
-            loadedToken.buyOrderBook[price].higherPrice = 0;
-            loadedToken.buyOrderBook[price].lowerPrice = 0;
-            loadedToken.numOfBuyPrices = 0;
-            loadedToken.minBuyPrice = 0;
-            loadedToken.maxBuyPrice = 0;
+            tokenList[_token].buyOrderBook[price].higherPrice = 0;
+            tokenList[_token].buyOrderBook[price].lowerPrice = 0;
+            tokenList[_token].numOfBuyPrices = 0;
+            tokenList[_token].minBuyPrice = 0;
+            tokenList[_token].maxBuyPrice = 0;
         }
     }
 

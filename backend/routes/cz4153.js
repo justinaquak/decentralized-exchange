@@ -1,5 +1,4 @@
 const hre = require('hardhat')
-// const interact = require('./interact')
 
 const contractAddress = "0xD1eaAf296e83aBD8910058bC339946A6E5Bffdde"
 const ownerAddress = '0xdC950e7c5946d787b8eF7a34b14686f2498D7347'

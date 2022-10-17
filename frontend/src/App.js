@@ -1,42 +1,20 @@
-import './App.css';
-import axios from 'axios';
-import React, {useEffect} from 'react'
+import React from 'react'
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+} from 'react-router-dom';
+
+import Home from './pages/Home';
+import './index.css';
 
 function App() {
-
-  const test = () => {
-    axios.post('http://localhost:5000/fyp/contract')
-      .then((res) => {
-        console.log(res)
-      })
-  }
-
-  const metaTransact = async (value) => {
-    if (typeof window.ethereum !== 'undefined') {
-      const account = await window.ethereum.request({ method: 'eth_requestAccounts' })
-      // const transactionParameters = {
-      //   from: account[0],
-      //   to: '0xDd511D59eF4697f8912a9C39D604788975249a12',
-      //   value: value,
-      //   gasPrice: '0',
-      //   gas: '0',
-      // }
-      // const txHash = await window.ethereum.request({
-      //   method: 'eth_sendTransaction',
-      //   params: [transactionParameters],
-      // });
-      // return txHash
-    }
-  }
-
-  useEffect(() => {
-    metaTransact()
-  }, [])
-
   return (
-    <div className="App">
-      <button onClick={() => test()}>test</button>
-    </div>
+    <Router>
+      <Routes>
+        <Route exact path='/' element={<Home/>}></Route>
+      </Routes>
+    </Router>
   );
 }
 

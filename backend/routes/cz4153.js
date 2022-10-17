@@ -1,8 +1,8 @@
 const hre = require('hardhat')
 // const interact = require('./interact')
 
-const contractAddress = '0xAAd2f2e899EE89a8A11027A3122Ba46E2EF350EA'
-const ownerAddress = '0x299127084517507488613Ca5CC0A22F6230495E7'
+const contractAddress = "0xD1eaAf296e83aBD8910058bC339946A6E5Bffdde"
+const ownerAddress = '0xdC950e7c5946d787b8eF7a34b14686f2498D7347'
 const goldAddress = "0xa15916E98DA69A24c3FD2e9Da6b03bB8351D15f9"
 const silverAddress = "0x3890448215221940163C75fd757Cc17DFD22b2CD"
 const bronzeAddress = "0x74Af70ea185F201c6283d725473AaB2De7b6775c"
@@ -27,7 +27,7 @@ async function contractInteractLogic(req, res) {
   const preResponse = async () => {
     const dexContract = await hre.ethers.getContractAt('Dex', contractAddress)
     const owner = await hre.ethers.getSigner(ownerAddress)
-    const feedback = await dexContract.connect(owner).buy()
+    const feedback = await dexContract.buyTokenLimit(goldAddress, silverAddress, 10, 10)
     console.log(feedback)
     // const test = await feedback.wait()
     // console.log(test.events)

@@ -17,7 +17,7 @@ contract Dex {
     struct OrderBook {
         uint256 higherPrice; // TODO 
         uint256 lowerPrice; // TODO
-        mapping(uint256 => Order) orders; // what the key be
+        mapping(uint256 => Order) orders; // key is number of orders
         uint256 highestPriority; // lowest number/value
         uint256 lowestPriority; // highest number/value
         uint256 numOfOrders;
@@ -211,7 +211,7 @@ contract Dex {
         require(getTokenBalance(msg.sender, _baseToken) >= ((_price.mul(_amount)).div(1e18)), 
                                 "buyTokenLimit: WETH balance is less than ETH required");
 
-        if (loadedToken.numOfSellPrices == 0 || loadedToken.minSellPrice > _price) { // no available/suitable sell orders
+        if (loadedToken.numOfSellPrices == 0 || loadedToken.minSellPrice > _price) { // no available/suitable sell order prices
             storeBuyOrder(_token, _price, _amount, msg.sender);
         } else {
             ERC20 baseToken = ERC20(_baseToken); // WETH Token
@@ -369,7 +369,7 @@ contract Dex {
                     loadedToken.maxBuyPrice = _price;
                     loadedToken.buyOrderBook[_price].higherPrice = _price; // oooo SETTING THE POINTERS
                     loadedToken.buyOrderBook[_price].lowerPrice = 0; // if it is the lowest price, the LP pointer will point to 0
-                } else {
+                } else { // have orders, but this price is the new minimum
                     loadedToken.buyOrderBook[lowestBuyPrice].lowerPrice = _price;
                     loadedToken.buyOrderBook[_price].higherPrice = lowestBuyPrice;
                     loadedToken.buyOrderBook[_price].lowerPrice = 0;

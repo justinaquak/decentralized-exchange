@@ -3,16 +3,16 @@ const hre = require('hardhat')
 async function contractCreateToken(req, res) {
   const preResponse = async () => {
     const iron = await hre.ethers.getContractFactory('IRON')
-    const gold = await hre.ethers.getContractFactory('GOLD')
-    const silver = await hre.ethers.getContractFactory('SILVER')
-    const bronze = await hre.ethers.getContractFactory('BRONZE')
     const deployIron = await iron.deploy()
-    const deployGold = await gold.deploy()
-    const deploySilver = await silver.deploy()
-    const deployBronze = await bronze.deploy()
     await deployIron.deployed()
+    const gold = await hre.ethers.getContractFactory('GOLD')
+    const deployGold = await gold.deploy()
     await deployGold.deployed()
+    const silver = await hre.ethers.getContractFactory('SILVER')
+    const deploySilver = await silver.deploy()
     await deploySilver.deployed()
+    const bronze = await hre.ethers.getContractFactory('BRONZE')
+    const deployBronze = await bronze.deploy()
     await deployBronze.deployed()
     return [ deployIron.address, deployGold.address, deploySilver.address, deployBronze.address ]
   }
@@ -42,10 +42,10 @@ async function contractCreateLogic(req, res) {
 }
 
 async function create(fastify, options) {
-  fastify.post('/token/create', async (request, reply) => {
+  fastify.post('/token', async (request, reply) => {
     await contractCreateToken(request, reply)
   })
-  fastify.post('/create', async (request, reply) => {
+  fastify.post('/contract', async (request, reply) => {
     await contractCreateLogic(request, reply)
   })
 }

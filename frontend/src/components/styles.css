@@ -4,9 +4,9 @@
   min-width: calc(320px - 64px);
   background-color: #FFFFFF;
   box-sizing: border-box;
-  height: 300px;
   box-shadow: 8px 8px #dcdbdb;
-  color: #2c353d
+  color: #2c353d;
+  padding: 16px;
 }
 
 .navbar-icon {

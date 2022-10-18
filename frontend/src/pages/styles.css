@@ -5,6 +5,13 @@
   min-width: 320px;
 }
 
+.home-connect-meta-wallet {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-direction: row;
+}
+
 .home-content-daddy {
   width: 100%;
   display: flex;
@@ -12,6 +19,13 @@
   align-items: center;
   flex-direction: column;
   box-sizing: border-box;
-  padding: 16px;
+  padding: 16px 0px;
   gap: 64px;
+}
+
+.home-swap-token {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
 }

@@ -11,3 +11,26 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+button {
+  display: inline-block;
+  font-weight: 600;
+  color: #fff;
+  font-size: 16px;
+  height: 32px;
+  background: green;
+  box-sizing: border-box;
+  padding: 0px 16px;
+  box-shadow: 4px 4px 4px rgb(0 0 0 / 50%);
+  border: 1px outset green;
+}
+
+.input {
+  height: 32px;
+  width: 150px !important;
+}
+
+.select {
+  height: 32px;
+  width: 120px;
+}

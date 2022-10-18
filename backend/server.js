@@ -1,13 +1,13 @@
 const fastify = require('fastify')({ logger: true })
 
 // Routes
-const cz4153 = require('./routes/cz4153')
+const dex = require('./routes/dex')
 
 fastify.register(require("@fastify/cors"), {
   origin: "*",
   methods: ["GET", "POST"]
 });
-fastify.register(cz4153, { prefix: '/cz4153' })
+fastify.register(dex, { prefix: '/dex' })
 
 // Run the server!
 const start = async () => {

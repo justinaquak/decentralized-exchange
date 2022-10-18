@@ -8,3 +8,5 @@
 # contract
 /backend/artifacts
 /backend/cache
+
+.bin

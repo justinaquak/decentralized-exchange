@@ -79,11 +79,8 @@ contract Dex {
 
                     if (getTokenBalance(msg.sender, _baseToken) >= baseTokenAmount) { // sufficient ether
                         approveAndExchangeToken(_baseToken, _token, msg.sender, loadedToken.sellOrderBook[buyPrice].orders[offerPointer].owner, baseTokenAmount, volumeAtPointer);
-                        
-                        loadedToken.sellOrderBook[buyPrice].orders[offerPointer].amount = 0;
-
-                        loadedToken.sellOrderBook[buyPrice].highestPriority = loadedToken.sellOrderBook[buyPrice] // Reassign LL pointer
-                                                                                        .orders[offerPointer].lowerPriority; 
+                                                loadedToken.sellOrderBook[buyPrice].orders[offerPointer].amount = 0;
+                        loadedToken.sellOrderBook[buyPrice].highestPriority = loadedToken.sellOrderBook[buyPrice].orders[offerPointer].lowerPriority; // Reassign LL pointer
 
                         remainingAmount = remainingAmount.sub(volumeAtPointer);
                     } else {
@@ -826,9 +823,6 @@ contract Dex {
 
         tokenA.transferFrom(address(this), ownerB, amountA);
         tokenB.transferFrom(address(this), ownerA, amountB);
-
-        tokenA.reduceAllowance(address(this), ownerB, amountA);
-        tokenB.reduceAllowance(address(this), ownerA, amountB);
         
         emit approveAndExchangeTokenResult(_tokenA, _tokenB, ownerA, ownerB, amountA, amountB);
     }

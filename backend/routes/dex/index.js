@@ -2,12 +2,13 @@ const hre = require('hardhat')
 const create = require('./create')
 const getter = require('./getter')
 const orders = require('./orders')
+const transfer = require('./transfer')
 
-const contractAddress = "0xACe87165BaF7C194Ed7Ba2880c5296Ec5020912A"
-const ironAddress = "0xd06F987a0dD0cCbD9A309773bA7afcA6e71AaE02"
-const goldAddress = "0x6A5249c86765E75B3ACd0D899A56B9170Cc206F3"
-const silverAddress = "0x63098097444285fe4741143d6fBB7Ff9CC3bFC39"
-const bronzeAddress = "0x1308Cc18525bE76A72de41786360F72BB0c01966"
+const contractAddress = "0x4826533B4897376654Bb4d4AD88B7faFD0C98528"
+const ironAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+const goldAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+const silverAddress = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+const bronzeAddress = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"
 
 async function contractInteractToken(req, res) {
   const preResponse = async () => {
@@ -32,41 +33,25 @@ async function contractInteractLogic(req, res) {
 
     const [owner, actor] = await hre.ethers.getSigners()
 
-    // const feedback = await dexContract.approveAndExchangeBuy(goldAddress, silverAddress, 10, owner.address, 10);
-    // console.log(feedback)
-    // const feedback1 = await dexContract.getSellOrders(ironAddress);
-    // console.log(feedback1)
-    // const feedback2 = await dexContract.connect(actor).getUserSellOrders(ironAddress);
-    // const feedback3 = await dexContract.getUserSellOrders(ironAddress);
-    // console.log(feedback2)
-    // console.log(feedback3)
+    // const buyTokenLimit = await dexContract.buyTokenLimit(goldAddress, silverAddress, 100, 10, 1000);
+    // await buyTokenLimit.wait()
+    const sellTokenMarket = await dexContract.sellTokenMarket(goldAddress, silverAddress, 7, 1000);
+    await sellTokenMarket.wait()
+    // const sellTokenMarket1 = await dexContract.sellTokenLimit(goldAddress, silverAddress, 100, 5, 1000);
+    // await sellTokenMarket1.wait()
 
-    // const feedback2 = await dexContract.connect(actor).buyTokenMarket(goldAddress, ironAddress, 5)
-    // console.log(feedback2)
-    // const ironContract = await hre.ethers.getContractAt('IRON', ironAddress)
-    // const approve = await goldContract.connect(actor).approve(actor.address, owner.address, 50)
+    // const tokenPrice = await silverContract.balanceOf(contractAddress)
+    // console.log(tokenPrice)
+
+    // APPROVES AND REDUCE AND BALANCE
+    // const approve = await goldContract.approve(owner.address, actor.address, 1000)
     // await approve.wait()
-    // const balance = await ironContract.transferFrom(actor.address, owner.address, hre.ethers.utils.parseEther("100"))
-    // const balance1 = await ironContract.balanceOf(actor.address)
-    // console.log(balance, balance1)
-    // const balance2 = await goldContract.transfer(contractAddress, 50)
-    // const balance3 = await silverContract.transfer(contractAddress, 50)
-    // await balance2.wait()
-    // await balance3.wait()
 
-    const approveAndExchange = await dexContract.approveAndExchangeToken(goldAddress, silverAddress, owner.address, actor.address, 50, 50)
-    await approveAndExchange.wait()
+    // const reduce = await goldContract.reduceAllowance(owner.address, actor.address, 1000)
+    // await reduce.wait()
 
-    // const approve1 = await goldContract.approve(contractAddress, actor.address, 1000)
-    // const approve2 = await silverContract.approve(contractAddress, actor.address, 1000)
-    // const balance2 = await goldContract.connect(actor).transferFrom(contractAddress, actor.address, 1000)
-    // const balance3 = await silverContract.connect(actor).transferFrom(contractAddress, actor.address, 1000)
-    // await approve1.wait()
-    // await approve2.wait()
-    // await balance2.wait()
-    // await balance3.wait()
-    // const balance3 = await goldContract.balanceOf('0x0FA7AC60b6596d0cD1e6D49C6FCe5f05f0F9B39')
-    // console.log(balance, balance1, balance2, balance3)
+    // const balance = await goldContract.allowance(owner.address, actor.address)
+    // console.log(balance)
     return
   }
 
@@ -82,6 +67,7 @@ async function dex(fastify, options) {
   fastify.register(create, { prefix: '/create' })
   fastify.register(getter, { prefix: '/get' })
   fastify.register(orders, { prefix: '/orders' })
+  fastify.register(transfer, { prefix: '/transfer' })
   fastify.post('/contract/interactToken', async (request, reply) => {
     await contractInteractToken(request, reply)
   })

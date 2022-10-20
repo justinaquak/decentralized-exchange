@@ -1,10 +1,5 @@
 const hre = require('hardhat')
-
-const contractAddress = "0x8F37DC90353976DBe73A4Aaa8DA99Db60c34f46d"
-const ironAddress = "0xd06F987a0dD0cCbD9A309773bA7afcA6e71AaE02"
-const goldAddress = "0x6A5249c86765E75B3ACd0D899A56B9170Cc206F3"
-const silverAddress = "0x63098097444285fe4741143d6fBB7Ff9CC3bFC39"
-const bronzeAddress = "0x1308Cc18525bE76A72de41786360F72BB0c01966"
+const {contractAddress, ironAddress, goldAddress, silverAddress, bronzeAddress} = require('../constants.js')
 const goldValue = 1000
 const silverValue = 100
 const bronzeValue = 10

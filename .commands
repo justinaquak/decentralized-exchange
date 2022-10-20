@@ -1,0 +1,34 @@
+let gold = await GOLD.deployed()
+await gold.approve("0x9cad0f48282025fc32D42480A19A4cD02beadDeE", "0xa0D9C39A84FD13b84f72cCc38b4ce2f60B193270", 10)
+
+goldAllowance = await gold.allowance("0x9cad0f48282025fc32D42480A19A4cD02beadDeE", "0xa0D9C39A84FD13b84f72cCc38b4ce2f60B193270")
+goldAllowance.toString()
+
+await gold.reduceAllowance("0x9cad0f48282025fc32D42480A19A4cD02beadDeE", "0xa0D9C39A84FD13b84f72cCc38b4ce2f60B193270", 10)
+
+let silver = await SILVER.deployed()
+
+let dex = await Dex.deployed()
+
+await dex.buyTokenLimit(gold.address, silver.address, 100, 10, 1000)
+await dex.sellTokenMarket(gold.address, silver.address, 10, 1000)
+
+await dex.sellTokenLimit(gold.address, silver.address, 100, 10, 1000)
+await dex.buyTokenLimit(silver.address, gold.address, 1000, 1, 100)
+
+goldBuyOrders = await dex.getBuyOrders(gold.address)
+
+silverBuyOrders = await dex.getBuyOrders(silver.address)
+
+goldSellOrders = await dex.getSellOrders(gold.address)
+
+silverSellOrders = await dex.getSellOrders(silver.address)
+silverBuyOrders[0].toString()
+silverBuyOrders[1].toString()
+goldSellOrders[0].toString()
+goldSellOrders[1].toString()
+
+await dex.sellTokenMarket(gold.address, silver.address, 10, 1000)
+await dex.buyTokenLimit(silver.address, gold.address, 1, 100)
+
+goldBal = await dex.getTokenBalance("0x9cad0f48282025fc32D42480A19A4cD02beadDeE", gold.address)

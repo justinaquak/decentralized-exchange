@@ -1,12 +1,8 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
-
-import "./SafeMath.sol";
 import "./ERC20.sol";
 
 contract SILVER is ERC20 {
-
-  using SafeMath for uint256;
 
   uint256 private constant MAX_UINT256 = 2**256 - 1;
   mapping(address => uint256) private balanceOfAddress;
@@ -31,8 +27,8 @@ contract SILVER is ERC20 {
   }
 
   function approve(address _from, address _to, uint256 _value) external returns (bool success) {
-    allowed[_from][_to] = allowed[_from][_to].add((_value.mul(1e18)));
-    emit Approval(_from, _to, (_value.mul(1e18)), allowed[_from][_to]);
+    allowed[_from][_to] = allowed[_from][_to] + (_value * 1e18);
+    emit Approval(_from, _to, (_value * 1e18), allowed[_from][_to]);
     return true;
   }
 
@@ -41,28 +37,28 @@ contract SILVER is ERC20 {
   }
 
   function transfer(address _to, uint256 _numberOfTokens) external returns (bool) {
-    require(balanceOfAddress[msg.sender] >= (_numberOfTokens.mul(1e18)));
-    balanceOfAddress[msg.sender] -= (_numberOfTokens.mul(1e18));
-    balanceOfAddress[_to] += (_numberOfTokens.mul(1e18));
-    emit Transfer(msg.sender, _to, (_numberOfTokens.mul(1e18)));
+    require(balanceOfAddress[msg.sender] >= (_numberOfTokens * 1e18));
+    balanceOfAddress[msg.sender] -= (_numberOfTokens * 1e18);
+    balanceOfAddress[_to] += (_numberOfTokens * 1e18);
+    emit Transfer(msg.sender, _to, (_numberOfTokens * 1e18));
     return true;
   }
 
   function transferFrom(address _from, address _to, uint256 _tokens) external returns (bool) {
     uint256 allowedAmount = allowed[_from][_to];
-    require(balanceOfAddress[_from] >= (_tokens.mul(1e18)) && allowedAmount >= (_tokens.mul(1e18)));
-    balanceOfAddress[_to] += (_tokens.mul(1e18));
-    balanceOfAddress[_from] -= (_tokens.mul(1e18));
+    require(balanceOfAddress[_from] >= (_tokens * 1e18) && allowedAmount >= (_tokens * 1e18));
+    balanceOfAddress[_to] += (_tokens * 1e18);
+    balanceOfAddress[_from] -= (_tokens * 1e18);
     if (allowedAmount < MAX_UINT256) {
-      allowed[_from][_to] -= (_tokens.mul(1e18));
+      allowed[_from][_to] -= (_tokens * 1e18);
     }
-    emit Transfer(_from, _to, (_tokens.mul(1e18))); 
+    emit Transfer(_from, _to, (_tokens * 1e18)); 
     return true;
   }
 
   function reduceAllowance(address _from, address _to, uint256 _value) external returns (uint256 currentAllowance) {
-    allowed[_from][_to] = allowed[_from][_to].sub((_value.mul(1e18)));
-    emit Approval(_from, _to, (_value.mul(1e18)), allowed[_from][_to]);
+    allowed[_from][_to] = allowed[_from][_to] - (_value * 1e18);
+    emit Approval(_from, _to, (_value * 1e18), allowed[_from][_to]);
     return allowed[_from][_to];
   }
 }

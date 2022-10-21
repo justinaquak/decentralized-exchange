@@ -1,7 +1,7 @@
-const contractAddress = "0x4826533B4897376654Bb4d4AD88B7faFD0C98528"
-const ironAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
-const goldAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
-const silverAddress = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
-const bronzeAddress = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"
+const contractAddress = "0xaca81583840B1bf2dDF6CDe824ada250C1936B4D"
+const ironAddress = "0x40a42Baf86Fc821f972Ad2aC878729063CeEF403"
+const goldAddress = "0x96F3Ce39Ad2BfDCf92C0F6E2C2CAbF83874660Fc"
+const silverAddress = "0x986aaa537b8cc170761FDAC6aC4fc7F9d8a20A8C"
+const bronzeAddress = "0xde2Bd2ffEA002b8E84ADeA96e5976aF664115E2c"
 
 module.exports =  {contractAddress, ironAddress, goldAddress, silverAddress, bronzeAddress}

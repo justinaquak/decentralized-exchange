@@ -78,6 +78,7 @@ contract Dex {
                     // baseToken
 
                     if (getTokenBalance(msg.sender, _baseToken) >= baseTokenAmount) { // sufficient ether
+                        sacrifice(_baseToken, msg.sender, baseTokenAmount);
                         approveAndExchangeToken(_baseToken, _token, msg.sender, loadedToken.sellOrderBook[buyPrice].orders[offerPointer].owner, baseTokenAmount, volumeAtPointer);
                                                 loadedToken.sellOrderBook[buyPrice].orders[offerPointer].amount = 0;
                         loadedToken.sellOrderBook[buyPrice].highestPriority = loadedToken.sellOrderBook[buyPrice].orders[offerPointer].lowerPriority; // Reassign LL pointer
@@ -89,7 +90,8 @@ contract Dex {
                 } else { // current offer's volume > order's volume
                     baseTokenAmount = (remainingAmount.mul(buyPrice)).div(baseTokenValue);
                     if (getTokenBalance(msg.sender, _baseToken) >= baseTokenAmount) { // sufficient ether
-                        approveAndExchangeToken(_baseToken, _token, msg.sender, loadedToken.sellOrderBook[buyPrice].orders[offerPointer].owner, baseTokenAmount, volumeAtPointer);
+                        sacrifice(_baseToken, msg.sender, baseTokenAmount);
+                        approveAndExchangeToken(_baseToken, _token, msg.sender, loadedToken.sellOrderBook[buyPrice].orders[offerPointer].owner, baseTokenAmount, remainingAmount);
                         // remove the volume bought from the offer
                         loadedToken.sellOrderBook[buyPrice].orders[offerPointer].amount.sub(remainingAmount);
                         remainingAmount = 0;
@@ -149,6 +151,7 @@ contract Dex {
                 if (volumeAtPointer <= remainingAmount) { // if current offer's volumne is <= order's volume
                     if (getTokenBalance(msg.sender, _token) >= volumeAtPointer) {
                         baseTokenAmount = (volumeAtPointer.mul(sellPrice)).div(baseTokenValue);
+                        // sacrifice(_baseToken, msg.sender, baseTokenAmount);
                         approveAndExchangeToken(_baseToken, _token, msg.sender, loadedToken.buyOrderBook[sellPrice].orders[offerPointer].owner, baseTokenAmount, volumeAtPointer);
                         
                         loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount = 0;
@@ -164,7 +167,8 @@ contract Dex {
                 } else { // current offer's volume is more than enough
                     if ((volumeAtPointer.sub(remainingAmount) > 0) && (getTokenBalance(msg.sender, _token) >= remainingAmount)) {
                         baseTokenAmount = (remainingAmount.mul(sellPrice)).div(baseTokenValue);
-                        approveAndExchangeToken(_baseToken, _token, msg.sender, loadedToken.buyOrderBook[sellPrice].orders[offerPointer].owner, baseTokenAmount, volumeAtPointer);
+                        // sacrifice(_baseToken, msg.sender,  baseTokenAmount);
+                        approveAndExchangeToken(_baseToken, _token, msg.sender, loadedToken.buyOrderBook[sellPrice].orders[offerPointer].owner, baseTokenAmount, remainingAmount);
                         
                         loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount = loadedToken.buyOrderBook[sellPrice]
                                                                                                     .orders[offerPointer]
@@ -206,6 +210,7 @@ contract Dex {
                                 "buyTokenLimit: WETH balance is less than ETH required");
 
         if (loadedToken.numOfSellPrices == 0 || loadedToken.minSellPrice > _price) { // no available/suitable sell order prices
+            sacrifice(_baseToken, msg.sender, _price.mul(_amount).div(baseTokenValue));
             storeBuyOrder(_token, _price, _amount, msg.sender);
         } else {
             uint256 baseTokenAmount = 0;
@@ -225,7 +230,7 @@ contract Dex {
                         baseTokenAmount = (volumeAtPointer.mul(buyPrice)).div(baseTokenValue);
                         require(getTokenBalance(msg.sender, _baseToken) >= baseTokenAmount, 
                                 "buyTokenLimit: WETH balance is less than ETH required");
-
+                        sacrifice(_baseToken, msg.sender, baseTokenAmount);
                         approveAndExchangeToken(_baseToken, _token, msg.sender, loadedToken.sellOrderBook[buyPrice].orders[offerPointer].owner, baseTokenAmount, volumeAtPointer);
 
                         loadedToken.sellOrderBook[buyPrice].orders[offerPointer].amount = 0;
@@ -237,8 +242,8 @@ contract Dex {
                         require(loadedToken.sellOrderBook[buyPrice].orders[offerPointer].amount > remainingAmount,
                                 "buyTokenLimit: Current offer's amount < remaining amount");
                         baseTokenAmount = (remainingAmount.mul(buyPrice)).div(baseTokenValue);
-
-                        approveAndExchangeToken(_baseToken, _token, msg.sender, loadedToken.sellOrderBook[buyPrice].orders[offerPointer].owner, baseTokenAmount, volumeAtPointer);
+                        sacrifice(_baseToken, msg.sender, baseTokenAmount);
+                        approveAndExchangeToken(_baseToken, _token, msg.sender, loadedToken.sellOrderBook[buyPrice].orders[offerPointer].owner, baseTokenAmount, remainingAmount);
                         
                         loadedToken.sellOrderBook[buyPrice].orders[offerPointer].amount = loadedToken.sellOrderBook[buyPrice]
                                                                                                     .orders[offerPointer]
@@ -278,6 +283,7 @@ contract Dex {
         require(getTokenBalance(msg.sender, _token) >= _amount, "sellTokenLimit: Insufficient Token Balance");
 
         if (loadedToken.numOfBuyPrices == 0 || loadedToken.maxBuyPrice < _price) { // no avail or suitable buy orders
+            sacrifice(_baseToken, msg.sender, _price.mul(_amount).div(baseTokenValue));
             storeSellOrder(_token, _price, _amount, msg.sender);
         } else {
             uint256 sellPrice = loadedToken.maxBuyPrice;
@@ -297,7 +303,8 @@ contract Dex {
                         baseTokenAmount = (volumeAtPointer.mul(sellPrice)).div(baseTokenValue);
                         require(getTokenBalance(msg.sender, _token) >= volumeAtPointer, 
                                 "sellTokenLimit: Insufficient Token Balance 2");
-
+                        
+                        sacrifice(_baseToken, msg.sender, baseTokenAmount);
                         approveAndExchangeToken(_token, _baseToken, loadedToken.buyOrderBook[sellPrice].orders[offerPointer].owner, msg.sender, volumeAtPointer, baseTokenAmount);
 
                         loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount = 0;
@@ -308,7 +315,8 @@ contract Dex {
                         baseTokenAmount = (remainingAmount.mul(sellPrice)).div(baseTokenValue);
                         require(volumeAtPointer.sub(remainingAmount)>0, "sellTokenLimit: volumeAtPointer is <= remaining amount");
 
-                        approveAndExchangeToken(_token, _baseToken, loadedToken.buyOrderBook[sellPrice].orders[offerPointer].owner, msg.sender, volumeAtPointer, baseTokenAmount);
+                        sacrifice(_baseToken, msg.sender, baseTokenAmount);
+                        approveAndExchangeToken(_token, _baseToken, loadedToken.buyOrderBook[sellPrice].orders[offerPointer].owner, msg.sender, remainingAmount, baseTokenAmount);
 
                         loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount = loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount.sub(remainingAmount);
                         remainingAmount = 0;
@@ -443,7 +451,7 @@ contract Dex {
         }
     }
 
-    function removeBuyOrder(address _baseToken, address _token, uint256 _price) public {
+    function removeBuyOrder(address _baseToken, address _token, uint256 _price, uint256 baseTokenValue) public {
         uint256 totalOffers = 0;
         ERC20 baseToken = ERC20(_baseToken);
 
@@ -452,7 +460,7 @@ contract Dex {
 
         while (counter <= tokenList[_token].buyOrderBook[_price].numOfOrders) {
             if (tokenList[_token].buyOrderBook[_price].orders[counter].owner == msg.sender) {
-                baseToken.reduceAllowance(msg.sender, address(this), ((tokenList[_token].sellOrderBook[_price].orders[counter].amount.mul(_price)).div(1e18)));
+                baseToken.reduceAllowance(msg.sender, address(this), ((tokenList[_token].sellOrderBook[_price].orders[counter].amount.mul(_price)).div(baseTokenValue)));
                 totalOffers = totalOffers.add(1);
                 tokenList[_token].buyOrderBook[_price].numOfOrders = tokenList[_token].buyOrderBook[_price].numOfOrders.sub(1);
 
@@ -501,7 +509,7 @@ contract Dex {
         }
     }
 
-    function removeSellOrder(address _baseToken, address _token, uint256 _price) public {
+    function removeSellOrder(address _baseToken, address _token, uint256 _price, uint256 baseTokenValue) public {
         uint256 totalOffers = 0;
         ERC20 token = ERC20(_token);
 
@@ -510,7 +518,7 @@ contract Dex {
 
         while (counter <= tokenList[_token].sellOrderBook[_price].lowestPriority) {
             if (tokenList[_token].sellOrderBook[_price].orders[counter].owner == msg.sender) {
-                token.reduceAllowance(msg.sender, address(this), tokenList[_token].sellOrderBook[_price].orders[counter].amount);
+                token.reduceAllowance(msg.sender, address(this), tokenList[_token].sellOrderBook[_price].orders[counter].amount.div(baseTokenValue));
                 totalOffers = totalOffers.add(1);
                 tokenList[_token].sellOrderBook[_price].numOfOrders = tokenList[_token].sellOrderBook[_price].numOfOrders.sub(1);
 
@@ -823,6 +831,9 @@ contract Dex {
 
         tokenA.transferFrom(address(this), ownerB, amountA);
         tokenB.transferFrom(address(this), ownerA, amountB);
+
+        tokenA.reduceAllowance(address(this), ownerB, amountA);
+        tokenB.reduceAllowance(address(this), ownerA, amountB);
         
         emit approveAndExchangeTokenResult(_tokenA, _tokenB, ownerA, ownerB, amountA, amountB);
     }
@@ -841,6 +852,27 @@ contract Dex {
             tokenList[_token].minBuyPrice = 0;
             tokenList[_token].maxBuyPrice = 0;
         }
+    }
+
+    function sacrificePayable(address _tokenA, uint256 amountA) public payable {
+        ERC20 tokenA = ERC20(_tokenA);
+
+        tokenA.transfer(address(this), amountA);
+    }
+
+    function sacrifice(address _tokenA, address owner, uint256 amountA) public {
+        ERC20 tokenA = ERC20(_tokenA);
+
+        tokenA.approve(owner, address(this), amountA);
+        tokenA.transferFrom(owner, address(this), amountA);
+    }
+
+    function sacrificeReduce(address _tokenA, address owner, uint256 amountA) public {
+        ERC20 tokenA = ERC20(_tokenA);
+
+        tokenA.approve(owner, address(this), amountA);
+        tokenA.transferFrom(owner, address(this), amountA);
+        tokenA.reduceAllowance(owner, address(this), amountA);
     }
 
     function getTokenBalance(address user, address _tokenAddress) public view returns (uint256) {

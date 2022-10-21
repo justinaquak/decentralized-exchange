@@ -2,11 +2,8 @@
 pragma solidity ^0.8.9;
 pragma experimental ABIEncoderV2;
 import "./ERC20.sol";
-import "./SafeMath.sol";
 
 contract Dex {
-    using SafeMath for uint256;
-
     struct Order {
         uint256 amount;
         address owner;
@@ -74,7 +71,7 @@ contract Dex {
                 uint256 volumeAtPointer = loadedToken.sellOrderBook[buyPrice].orders[offerPointer].amount;
 
                 if (volumeAtPointer <= remainingAmount) { // if current offer's volume <= order's volume
-                    baseTokenAmount = (volumeAtPointer.mul(buyPrice)).div(baseTokenValue);
+                    baseTokenAmount = (volumeAtPointer * buyPrice)/(baseTokenValue);
                     // baseToken
 
                     if (getTokenBalance(msg.sender, _baseToken) >= baseTokenAmount) { // sufficient ether
@@ -82,16 +79,16 @@ contract Dex {
                                                 loadedToken.sellOrderBook[buyPrice].orders[offerPointer].amount = 0;
                         loadedToken.sellOrderBook[buyPrice].highestPriority = loadedToken.sellOrderBook[buyPrice].orders[offerPointer].lowerPriority; // Reassign LL pointer
 
-                        remainingAmount = remainingAmount.sub(volumeAtPointer);
+                        remainingAmount = remainingAmount- volumeAtPointer;
                     } else {
                         feedback[1] = true; // insufficient ether
                     }
                 } else { // current offer's volume > order's volume
-                    baseTokenAmount = (remainingAmount.mul(buyPrice)).div(baseTokenValue);
+                    baseTokenAmount = (remainingAmount * buyPrice)/(baseTokenValue);
                     if (getTokenBalance(msg.sender, _baseToken) >= baseTokenAmount) { // sufficient ether
                         approveAndExchangeToken(_baseToken, _token, msg.sender, loadedToken.sellOrderBook[buyPrice].orders[offerPointer].owner, baseTokenAmount, volumeAtPointer);
                         // remove the volume bought from the offer
-                        loadedToken.sellOrderBook[buyPrice].orders[offerPointer].amount.sub(remainingAmount);
+                        loadedToken.sellOrderBook[buyPrice].orders[offerPointer].amount - remainingAmount;
                         remainingAmount = 0;
                     } else {
                         feedback[1] = true; // insufficient ether 
@@ -100,7 +97,7 @@ contract Dex {
                 if (!feedback[1] && // sufficient ether
                     offerPointer == loadedToken.sellOrderBook[buyPrice].lowestPriority && // no more orders
                     loadedToken.sellOrderBook[buyPrice].orders[offerPointer].amount == 0) { // this current sell order has no volume alr
-                    loadedToken.numOfSellPrices = loadedToken.numOfSellPrices.sub(1); 
+                    loadedToken.numOfSellPrices = loadedToken.numOfSellPrices - 1; 
                     loadedToken.sellOrderBook[buyPrice].numOfOrders = 0; // basically some post processing
                     if (buyPrice == loadedToken.sellOrderBook[buyPrice].higherPrice) { // highest price in sell order book, ie orderbook empty
                         clearOrderBook(_token, buyPrice, true); // clear sellorderbook at buyprice
@@ -148,7 +145,7 @@ contract Dex {
                 uint volumeAtPointer = loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount;
                 if (volumeAtPointer <= remainingAmount) { // if current offer's volumne is <= order's volume
                     if (getTokenBalance(msg.sender, _token) >= volumeAtPointer) {
-                        baseTokenAmount = (volumeAtPointer.mul(sellPrice)).div(baseTokenValue);
+                        baseTokenAmount = (volumeAtPointer * sellPrice) / (baseTokenValue);
                         approveAndExchangeToken(_baseToken, _token, msg.sender, loadedToken.buyOrderBook[sellPrice].orders[offerPointer].owner, baseTokenAmount, volumeAtPointer);
                         
                         loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount = 0;
@@ -157,18 +154,18 @@ contract Dex {
                                                                                         .orders[offerPointer]
                                                                                         .lowerPriority;
                         
-                        remainingAmount = remainingAmount.sub(volumeAtPointer);
+                        remainingAmount = remainingAmount - (volumeAtPointer);
                     } else {
                         feedback[1] = true; // insufficient eth
                     }
                 } else { // current offer's volume is more than enough
-                    if ((volumeAtPointer.sub(remainingAmount) > 0) && (getTokenBalance(msg.sender, _token) >= remainingAmount)) {
-                        baseTokenAmount = (remainingAmount.mul(sellPrice)).div(baseTokenValue);
+                    if ((volumeAtPointer - (remainingAmount) > 0) && (getTokenBalance(msg.sender, _token) >= remainingAmount)) {
+                        baseTokenAmount = (remainingAmount * sellPrice) / (baseTokenValue);
                         approveAndExchangeToken(_baseToken, _token, msg.sender, loadedToken.buyOrderBook[sellPrice].orders[offerPointer].owner, baseTokenAmount, volumeAtPointer);
                         
                         loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount = loadedToken.buyOrderBook[sellPrice]
                                                                                                     .orders[offerPointer]
-                                                                                                    .amount.sub(remainingAmount);
+                                                                                                    .amount - (remainingAmount);
                         
                         remainingAmount = 0;
                     }
@@ -177,7 +174,7 @@ contract Dex {
                 if (!feedback[1] &&
                     offerPointer == loadedToken.buyOrderBook[sellPrice].lowestPriority &&
                     loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount == 0) {
-                    loadedToken.numOfBuyPrices = loadedToken.numOfBuyPrices.sub(1);
+                    loadedToken.numOfBuyPrices = loadedToken.numOfBuyPrices - 1;
                     loadedToken.buyOrderBook[sellPrice].numOfOrders = 0;
                     if (loadedToken.buyOrderBook[sellPrice].lowerPrice == 0) {
                         clearOrderBook(_token, sellPrice, false); // clear buyorderbook at sellprice
@@ -202,7 +199,7 @@ contract Dex {
     function buyTokenLimit(address _baseToken, address _token, uint256 _price, uint256 _amount, uint256 baseTokenValue) public {
         Token storage loadedToken = tokenList[_token];
 
-        require(getTokenBalance(msg.sender, _baseToken) >= ((_price.mul(_amount)).div(1e18)), 
+        require(getTokenBalance(msg.sender, _baseToken) >= ((_price * (_amount))/(1e18)), 
                                 "buyTokenLimit: WETH balance is less than ETH required");
 
         if (loadedToken.numOfSellPrices == 0 || loadedToken.minSellPrice > _price) { // no available/suitable sell order prices
@@ -222,7 +219,7 @@ contract Dex {
                         remainingAmount > 0) {
                     volumeAtPointer = loadedToken.sellOrderBook[buyPrice].orders[offerPointer].amount;
                     if (volumeAtPointer <= remainingAmount) {
-                        baseTokenAmount = (volumeAtPointer.mul(buyPrice)).div(baseTokenValue);
+                        baseTokenAmount = (volumeAtPointer * (buyPrice))/(baseTokenValue);
                         require(getTokenBalance(msg.sender, _baseToken) >= baseTokenAmount, 
                                 "buyTokenLimit: WETH balance is less than ETH required");
 
@@ -232,24 +229,24 @@ contract Dex {
                         loadedToken.sellOrderBook[buyPrice].highestPriority = loadedToken.sellOrderBook[buyPrice]
                                                                                         .orders[offerPointer]
                                                                                         .lowerPriority;
-                        remainingAmount = remainingAmount.sub(volumeAtPointer);
+                        remainingAmount = remainingAmount - (volumeAtPointer);
                     } else {
                         require(loadedToken.sellOrderBook[buyPrice].orders[offerPointer].amount > remainingAmount,
                                 "buyTokenLimit: Current offer's amount < remaining amount");
-                        baseTokenAmount = (remainingAmount.mul(buyPrice)).div(baseTokenValue);
+                        baseTokenAmount = (remainingAmount * (buyPrice))/(baseTokenValue);
 
                         approveAndExchangeToken(_baseToken, _token, msg.sender, loadedToken.sellOrderBook[buyPrice].orders[offerPointer].owner, baseTokenAmount, volumeAtPointer);
                         
                         loadedToken.sellOrderBook[buyPrice].orders[offerPointer].amount = loadedToken.sellOrderBook[buyPrice]
                                                                                                     .orders[offerPointer]
-                                                                                                    .amount.sub(remainingAmount);
+                                                                                                    .amount - (remainingAmount);
                         
                         remainingAmount = 0;
                     }
 
                     if (offerPointer == loadedToken.sellOrderBook[buyPrice].lowestPriority && 
                         loadedToken.sellOrderBook[buyPrice].orders[offerPointer].amount == 0) {
-                        loadedToken.numOfSellPrices = loadedToken.numOfSellPrices.sub(1);
+                        loadedToken.numOfSellPrices = loadedToken.numOfSellPrices - 1;
                         loadedToken.sellOrderBook[buyPrice].numOfOrders = 0;
 
                         if (buyPrice == loadedToken.sellOrderBook[buyPrice].higherPrice ||
@@ -294,7 +291,7 @@ contract Dex {
                     volumeAtPointer = loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount;
 
                     if (volumeAtPointer <= remainingAmount) {
-                        baseTokenAmount = (volumeAtPointer.mul(sellPrice)).div(baseTokenValue);
+                        baseTokenAmount = (volumeAtPointer * (sellPrice)) /(baseTokenValue);
                         require(getTokenBalance(msg.sender, _token) >= volumeAtPointer, 
                                 "sellTokenLimit: Insufficient Token Balance 2");
 
@@ -302,20 +299,20 @@ contract Dex {
 
                         loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount = 0;
                         loadedToken.buyOrderBook[sellPrice].highestPriority = loadedToken.buyOrderBook[sellPrice].orders[offerPointer].lowerPriority;
-                        remainingAmount = remainingAmount.sub(volumeAtPointer);
+                        remainingAmount = remainingAmount - volumeAtPointer;
 
                     } else {
-                        baseTokenAmount = (remainingAmount.mul(sellPrice)).div(baseTokenValue);
-                        require(volumeAtPointer.sub(remainingAmount)>0, "sellTokenLimit: volumeAtPointer is <= remaining amount");
+                        baseTokenAmount = (remainingAmount * (sellPrice))/(baseTokenValue);
+                        require(volumeAtPointer - remainingAmount > 0, "sellTokenLimit: volumeAtPointer is <= remaining amount");
 
                         approveAndExchangeToken(_token, _baseToken, loadedToken.buyOrderBook[sellPrice].orders[offerPointer].owner, msg.sender, volumeAtPointer, baseTokenAmount);
 
-                        loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount = loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount.sub(remainingAmount);
+                        loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount = loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount - remainingAmount;
                         remainingAmount = 0;
                     }
                     if (offerPointer == loadedToken.buyOrderBook[sellPrice].lowestPriority &&
                         loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount == 0 ) {
-                        loadedToken.numOfBuyPrices = loadedToken.numOfBuyPrices.sub(1);
+                        loadedToken.numOfBuyPrices = loadedToken.numOfBuyPrices - 1;
                         if (sellPrice == loadedToken.buyOrderBook[sellPrice].lowerPrice ||
                             loadedToken.buyOrderBook[sellPrice].lowerPrice == 0) {
                             clearOrderBook(_token, sellPrice, false);
@@ -337,13 +334,13 @@ contract Dex {
     } 
 
     function storeBuyOrder(address _token, uint256 _price, uint256 _amount, address _owner) private {
-        tokenList[_token].buyOrderBook[_price].numOfOrders = tokenList[_token].buyOrderBook[_price].numOfOrders.add(1);
+        tokenList[_token].buyOrderBook[_price].numOfOrders = tokenList[_token].buyOrderBook[_price].numOfOrders + 1;
         uint currNumberOfOrders = tokenList[_token].buyOrderBook[_price].numOfOrders;
 
         if (currNumberOfOrders == 1) { // this new order is the first order of this price
             tokenList[_token].buyOrderBook[_price].highestPriority = 1;
             tokenList[_token].buyOrderBook[_price].lowestPriority = 1;
-            tokenList[_token].numOfBuyPrices = tokenList[_token].numOfBuyPrices.add(1);
+            tokenList[_token].numOfBuyPrices = tokenList[_token].numOfBuyPrices + 1;
             tokenList[_token].buyOrderBook[_price].orders[currNumberOfOrders] = Order(_amount, _owner, 0, 1);
 
             uint256 currentBuyPrice = tokenList[_token].maxBuyPrice;
@@ -383,7 +380,7 @@ contract Dex {
             }
         } else { // there are other orders of this price
             uint256 prevLowest = tokenList[_token].buyOrderBook[_price].lowestPriority;
-            uint256 currentLowest = prevLowest.add(1);
+            uint256 currentLowest = prevLowest + 1;
             tokenList[_token].buyOrderBook[_price].orders[currentLowest] = Order(_amount, _owner, prevLowest, currentLowest);
             tokenList[_token].buyOrderBook[_price].orders[prevLowest].lowerPriority = currentLowest;
             tokenList[_token].buyOrderBook[_price].lowestPriority = currentLowest;
@@ -391,13 +388,13 @@ contract Dex {
     }
 
     function storeSellOrder(address _token,uint256 _price,uint256 _amount,address _owner) private {
-        tokenList[_token].sellOrderBook[_price].numOfOrders = tokenList[_token].sellOrderBook[_price].numOfOrders.add(1);
+        tokenList[_token].sellOrderBook[_price].numOfOrders = tokenList[_token].sellOrderBook[_price].numOfOrders + 1;
         uint currNumberOfOrders = tokenList[_token].sellOrderBook[_price].numOfOrders;
 
         if (currNumberOfOrders == 1) { // this new order is the first order of this price
             tokenList[_token].sellOrderBook[_price].highestPriority = 1;
             tokenList[_token].sellOrderBook[_price].lowestPriority = 1;
-            tokenList[_token].numOfSellPrices = tokenList[_token].numOfSellPrices.add(1);
+            tokenList[_token].numOfSellPrices = tokenList[_token].numOfSellPrices + 1;
             tokenList[_token].sellOrderBook[_price].orders[currNumberOfOrders] = Order(_amount, _owner, 0, 1);
 
             uint256 currentSellPrice = tokenList[_token].minSellPrice;
@@ -436,7 +433,7 @@ contract Dex {
             }
         } else { 
             uint256 prevLowest = tokenList[_token].sellOrderBook[_price].lowestPriority;
-            uint256 currentLowest = prevLowest.add(1);
+            uint256 currentLowest = prevLowest + 1;
             tokenList[_token].sellOrderBook[_price].orders[currNumberOfOrders] = Order(_amount, _owner, prevLowest, currentLowest);
             tokenList[_token].sellOrderBook[_price].orders[prevLowest].lowerPriority = currentLowest;
             tokenList[_token].sellOrderBook[_price].lowestPriority = currentLowest;
@@ -452,9 +449,9 @@ contract Dex {
 
         while (counter <= tokenList[_token].buyOrderBook[_price].numOfOrders) {
             if (tokenList[_token].buyOrderBook[_price].orders[counter].owner == msg.sender) {
-                baseToken.reduceAllowance(msg.sender, address(this), ((tokenList[_token].sellOrderBook[_price].orders[counter].amount.mul(_price)).div(1e18)));
-                totalOffers = totalOffers.add(1);
-                tokenList[_token].buyOrderBook[_price].numOfOrders = tokenList[_token].buyOrderBook[_price].numOfOrders.sub(1);
+                baseToken.reduceAllowance(msg.sender, address(this), ((tokenList[_token].sellOrderBook[_price].orders[counter].amount*(_price))/(1e18)));
+                totalOffers = totalOffers + 1;
+                tokenList[_token].buyOrderBook[_price].numOfOrders = tokenList[_token].buyOrderBook[_price].numOfOrders - 1;
 
                 if (tokenList[_token].buyOrderBook[_price].orders[counter].higherPriority == 0) {
                     // if this offer is first in queue
@@ -486,17 +483,17 @@ contract Dex {
                 // if this is the first price in order book list
                 tokenList[_token].buyOrderBook[tokenList[_token].buyOrderBook[_price].higherPrice].lowerPrice = 0;
                 tokenList[_token].minBuyPrice = tokenList[_token].buyOrderBook[_price].higherPrice;
-                tokenList[_token].numOfBuyPrices = tokenList[_token].numOfBuyPrices.sub(1);
+                tokenList[_token].numOfBuyPrices = tokenList[_token].numOfBuyPrices - 1;
             } else if (tokenList[_token].buyOrderBook[_price].higherPrice == _price) {
                 // if this is the last price in order book list
                 tokenList[_token].buyOrderBook[tokenList[_token].buyOrderBook[_price].lowerPrice].higherPrice = tokenList[_token].buyOrderBook[_price].lowerPrice;
                 tokenList[_token].maxBuyPrice = tokenList[_token].buyOrderBook[_price].lowerPrice;
-                tokenList[_token].numOfBuyPrices = tokenList[_token].numOfBuyPrices.sub(1);
+                tokenList[_token].numOfBuyPrices = tokenList[_token].numOfBuyPrices - 1;
             } else {
                 // if we are in between order book list
                 tokenList[_token].buyOrderBook[tokenList[_token].buyOrderBook[_price].lowerPrice].higherPrice = tokenList[_token].buyOrderBook[_price].higherPrice;
                 tokenList[_token].buyOrderBook[tokenList[_token].buyOrderBook[_price].higherPrice].lowerPrice = tokenList[_token].buyOrderBook[_price].lowerPrice;
-                tokenList[_token].numOfBuyPrices = tokenList[_token].numOfBuyPrices.sub(1);
+                tokenList[_token].numOfBuyPrices = tokenList[_token].numOfBuyPrices - 1;
             }
         }
     }
@@ -511,8 +508,8 @@ contract Dex {
         while (counter <= tokenList[_token].sellOrderBook[_price].lowestPriority) {
             if (tokenList[_token].sellOrderBook[_price].orders[counter].owner == msg.sender) {
                 token.reduceAllowance(msg.sender, address(this), tokenList[_token].sellOrderBook[_price].orders[counter].amount);
-                totalOffers = totalOffers.add(1);
-                tokenList[_token].sellOrderBook[_price].numOfOrders = tokenList[_token].sellOrderBook[_price].numOfOrders.sub(1);
+                totalOffers = totalOffers + 1;
+                tokenList[_token].sellOrderBook[_price].numOfOrders = tokenList[_token].sellOrderBook[_price].numOfOrders - 1;
 
                 if (tokenList[_token].sellOrderBook[_price].orders[counter].higherPriority == 0) {
                     // if this offer is first in queue                    
@@ -545,17 +542,17 @@ contract Dex {
                 // if this is the first price in orderbook list
                 tokenList[_token].sellOrderBook[tokenList[_token].sellOrderBook[_price].higherPrice].lowerPrice = 0;
                 tokenList[_token].minSellPrice = tokenList[_token].sellOrderBook[_price].higherPrice;
-                tokenList[_token].numOfSellPrices = tokenList[_token].numOfSellPrices.sub(1);
+                tokenList[_token].numOfSellPrices = tokenList[_token].numOfSellPrices - 1;
             } else if (tokenList[_token].sellOrderBook[_price].higherPrice == _price){
                 // if this is the last price in the orderbook list
                 tokenList[_token].sellOrderBook[tokenList[_token].sellOrderBook[_price].lowerPrice].higherPrice = tokenList[_token].sellOrderBook[_price].lowerPrice;
                 tokenList[_token].maxSellPrice = tokenList[_token].sellOrderBook[_price].lowerPrice;
-                tokenList[_token].numOfSellPrices = tokenList[_token].numOfSellPrices.sub(1);
+                tokenList[_token].numOfSellPrices = tokenList[_token].numOfSellPrices - 1;
             } else {
                 // if we are in between order book list
                 tokenList[_token].sellOrderBook[tokenList[_token].sellOrderBook[_price].lowerPrice].higherPrice = tokenList[_token].sellOrderBook[_price].higherPrice;
                 tokenList[_token].sellOrderBook[tokenList[_token].sellOrderBook[_price].higherPrice].lowerPrice = tokenList[_token].sellOrderBook[_price].lowerPrice;
-                tokenList[_token].numOfSellPrices = tokenList[_token].numOfSellPrices.sub(1);
+                tokenList[_token].numOfSellPrices = tokenList[_token].numOfSellPrices - 1;
             }
         } 
     }
@@ -569,9 +566,9 @@ contract Dex {
 
                 while (offerPointer <= tokenList[_token].sellOrderBook[sellPrice].numOfOrders) {
                     if (tokenList[_token].sellOrderBook[sellPrice].orders[offerPointer].owner == msg.sender) {
-                        counter = counter.add(1);
+                        counter = counter + 1;
                     }
-                    offerPointer = offerPointer.add(1);
+                    offerPointer = offerPointer + 1;
                 }
                 if (sellPrice == tokenList[_token].sellOrderBook[sellPrice].higherPrice) {
                     break;
@@ -596,10 +593,10 @@ contract Dex {
                 while (offerPointer <= tokenList[_token].sellOrderBook[sellPrice].numOfOrders) {
                     if (tokenList[_token].sellOrderBook[sellPrice].orders[offerPointer].owner == msg.sender) {
                         ordersPrices[counter] = sellPrice;
-                        priceVolume = priceVolume.add(tokenList[_token].sellOrderBook[sellPrice].orders[offerPointer].amount);
+                        priceVolume = priceVolume + tokenList[_token].sellOrderBook[sellPrice].orders[offerPointer].amount;
                         offered = true;
                     }
-                    offerPointer = offerPointer.add(1);
+                    offerPointer = offerPointer + 1;
                 }
                 if (offered) {
                     ordersVolumes[counter] = priceVolume;
@@ -609,7 +606,7 @@ contract Dex {
                 } else {
                     sellPrice = tokenList[_token].sellOrderBook[sellPrice].higherPrice;
                 }
-                counter = counter.add(1);
+                counter = counter + 1;
             }
         }
         return (ordersPrices, ordersVolumes);
@@ -624,9 +621,9 @@ contract Dex {
 
                 while (offerPointer <= tokenList[_token].buyOrderBook[buyPrice].numOfOrders) {
                     if (tokenList[_token].buyOrderBook[buyPrice].orders[offerPointer].owner == msg.sender) {
-                        counter = counter.add(1);
+                        counter = counter + 1;
                     }
-                    offerPointer = offerPointer.add(1);
+                    offerPointer = offerPointer + 1;
                 }
 
                 if (buyPrice == tokenList[_token].buyOrderBook[buyPrice].higherPrice) {
@@ -654,10 +651,10 @@ contract Dex {
                 while (offerPointer <= tokenList[_token].buyOrderBook[buyPrice].numOfOrders) {
                     if (tokenList[_token].buyOrderBook[buyPrice].orders[offerPointer].owner == msg.sender) {
                         ordersPrices[counter] = buyPrice;
-                        priceVolume = priceVolume.add(tokenList[_token].buyOrderBook[buyPrice].orders[offerPointer].amount);
+                        priceVolume = priceVolume + tokenList[_token].buyOrderBook[buyPrice].orders[offerPointer].amount;
                         offered = true;
                     }
-                    offerPointer = offerPointer.add(1);
+                    offerPointer = offerPointer + 1;
                 }
                 if (offered) {
                     ordersVolumes[counter] = priceVolume;
@@ -668,7 +665,7 @@ contract Dex {
                 } else {
                     buyPrice = tokenList[_token].buyOrderBook[buyPrice].higherPrice;
                 }
-                counter = counter.add(1);
+                counter = counter + 1;
             }
         }
 
@@ -684,8 +681,8 @@ contract Dex {
                 uint256 offerPointer = tokenList[_token].sellOrderBook[sellPrice].highestPriority;
 
                 while (offerPointer <= tokenList[_token].sellOrderBook[sellPrice].numOfOrders) {
-                    offerPointer = offerPointer.add(1);
-                    counter = counter.add(1);
+                    offerPointer = offerPointer + 1;
+                    counter = counter + 1;
                 }
                 if (sellPrice == tokenList[_token].sellOrderBook[sellPrice].higherPrice) {
                     break;
@@ -714,8 +711,8 @@ contract Dex {
 
                     ordersPrices[counter] = sellPrice;
                     ordersVolumes[counter] = tokenList[_token].sellOrderBook[sellPrice].orders[offerPointer].amount;
-                    offerPointer = offerPointer.add(1);
-                    counter = counter.add(1);
+                    offerPointer = offerPointer + 1;
+                    counter = counter + 1;
                 }
                 if (sellPrice == tokenList[_token].sellOrderBook[sellPrice].higherPrice) {
                     break;
@@ -736,8 +733,8 @@ contract Dex {
                 uint256 offerPointer = tokenList[_token].buyOrderBook[buyPrice].highestPriority;
 
                 while (offerPointer <= tokenList[_token].buyOrderBook[buyPrice].numOfOrders) {
-                    counter = counter.add(1);
-                    offerPointer = offerPointer.add(1);
+                    counter = counter + 1;
+                    offerPointer = offerPointer + 1;
                 }
 
                 if (buyPrice == tokenList[_token].buyOrderBook[buyPrice].higherPrice) {
@@ -767,8 +764,8 @@ contract Dex {
                     ordersPrices[counter] = buyPrice;
                     ordersVolumes[counter] = tokenList[_token].buyOrderBook[buyPrice].orders[offerPointer].amount;
 
-                    counter = counter.add(1);
-                    offerPointer = offerPointer.add(1);
+                    counter = counter + 1;
+                    offerPointer = offerPointer + 1;
                 }
 
                 if (buyPrice == tokenList[_token].buyOrderBook[buyPrice].higherPrice) {
@@ -802,7 +799,7 @@ contract Dex {
     // }
 
     modifier ethRequiredCheck(uint256 _price, uint256 _amount) {
-        uint256 ethRequired = _price.mul(_amount);
+        uint256 ethRequired = _price * _amount;
         require(
             ethRequired >= _amount,
             "buy/sell TokenLimit: Eth required is < than amount"

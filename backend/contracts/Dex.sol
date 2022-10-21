@@ -148,7 +148,7 @@ contract Dex {
                 if (volumeAtPointer <= remainingAmount) { // if current offer's volumne is <= order's volume
                     if (getTokenBalance(msg.sender, _token) >= volumeAtPointer) {
                         baseTokenAmount = (volumeAtPointer * sellPrice) / (baseTokenValue);
-                        sacrifice(_baseToken, msg.sender, baseTokenAmount);
+                        sacrifice(_token, msg.sender, volumeAtPointer);
                         approveAndExchangeToken(_baseToken, _token, msg.sender, loadedToken.buyOrderBook[sellPrice].orders[offerPointer].owner, baseTokenAmount, volumeAtPointer);
                         
                         loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount = 0;
@@ -164,7 +164,7 @@ contract Dex {
                 } else { // current offer's volume is more than enough
                     if ((volumeAtPointer - (remainingAmount) > 0) && (getTokenBalance(msg.sender, _token) >= remainingAmount)) {
                         baseTokenAmount = (remainingAmount * sellPrice) / (baseTokenValue);
-                        sacrifice(_baseToken, msg.sender, baseTokenAmount);
+                        sacrifice(_token, msg.sender, volumeAtPointer - remainingAmount);
                         approveAndExchangeToken(_baseToken, _token, msg.sender, loadedToken.buyOrderBook[sellPrice].orders[offerPointer].owner, baseTokenAmount, remainingAmount);
                         
                         loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount = loadedToken.buyOrderBook[sellPrice]
@@ -280,7 +280,7 @@ contract Dex {
         require(getTokenBalance(msg.sender, _token) >= _amount, "sellTokenLimit: Insufficient Token Balance");
 
         if (loadedToken.numOfBuyPrices == 0 || loadedToken.maxBuyPrice < _price) { // no avail or suitable buy orders
-            sacrifice(_baseToken, msg.sender, _price*_amount/baseTokenValue);
+            sacrifice(_token, msg.sender, _amount);
             storeSellOrder(_token, _price, _amount, msg.sender);
         } else {
             uint256 sellPrice = loadedToken.maxBuyPrice;
@@ -301,8 +301,9 @@ contract Dex {
                         require(getTokenBalance(msg.sender, _token) >= volumeAtPointer, 
                                 "sellTokenLimit: Insufficient Token Balance 2");
 
-                        sacrifice(_baseToken, msg.sender, baseTokenAmount);
-                        approveAndExchangeToken(_token, _baseToken, loadedToken.buyOrderBook[sellPrice].orders[offerPointer].owner, msg.sender, volumeAtPointer, baseTokenAmount);
+                        sacrifice(_token, msg.sender, volumeAtPointer);
+                        // approveAndExchangeToken(_token, _baseToken, loadedToken.buyOrderBook[sellPrice].orders[offerPointer].owner, msg.sender, volumeAtPointer, baseTokenAmount);
+                        approveAndExchangeToken(_baseToken, _token, loadedToken.buyOrderBook[sellPrice].orders[offerPointer].owner, msg.sender, baseTokenAmount, volumeAtPointer);
 
                         loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount = 0;
                         loadedToken.buyOrderBook[sellPrice].highestPriority = loadedToken.buyOrderBook[sellPrice].orders[offerPointer].lowerPriority;
@@ -312,8 +313,9 @@ contract Dex {
                         baseTokenAmount = (remainingAmount * (sellPrice))/(baseTokenValue);
                         require(volumeAtPointer - remainingAmount > 0, "sellTokenLimit: volumeAtPointer is <= remaining amount");
 
-                        sacrifice(_baseToken, msg.sender, baseTokenAmount);
-                        approveAndExchangeToken(_token, _baseToken, loadedToken.buyOrderBook[sellPrice].orders[offerPointer].owner, msg.sender, volumeAtPointer, remainingAmount);
+                        sacrifice(_token, msg.sender, volumeAtPointer - remainingAmount);
+                        // approveAndExchangeToken(_token, _baseToken, loadedToken.buyOrderBook[sellPrice].orders[offerPointer].owner, msg.sender, volumeAtPointer, remainingAmount);
+                        approveAndExchangeToken(_baseToken, _token, loadedToken.buyOrderBook[sellPrice].orders[offerPointer].owner, msg.sender, remainingAmount, volumeAtPointer);
 
                         loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount = loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount - remainingAmount;
                         remainingAmount = 0;

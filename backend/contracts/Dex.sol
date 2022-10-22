@@ -7,6 +7,7 @@ contract Dex {
     struct Order {
         uint256 amount;
         address owner;
+        address sacrificedToken;
         uint256 higherPriority; // TODO is this a linked list ??
         uint256 lowerPriority; // TODO is this a linked list ?? where instantiate 
     }
@@ -208,7 +209,7 @@ contract Dex {
 
         if (loadedToken.numOfSellPrices == 0 || loadedToken.minSellPrice > _price) { // no available/suitable sell order prices
             sacrifice(_baseToken, msg.sender, _price*_amount/baseTokenValue);
-            storeBuyOrder(_token, _price, _amount, msg.sender);
+            storeBuyOrder(_baseToken, _token, _price, _amount, msg.sender);
         } else {
             uint256 baseTokenAmount = 0;
             uint256 remainingAmount = _amount;
@@ -341,7 +342,7 @@ contract Dex {
         }
     } 
 
-    function storeBuyOrder(address _token, uint256 _price, uint256 _amount, address _owner) private {
+    function storeBuyOrder(address _baseToken, address _token, uint256 _price, uint256 _amount, address _owner) private {
         tokenList[_token].buyOrderBook[_price].numOfOrders = tokenList[_token].buyOrderBook[_price].numOfOrders + 1;
         uint currNumberOfOrders = tokenList[_token].buyOrderBook[_price].numOfOrders;
 
@@ -349,7 +350,7 @@ contract Dex {
             tokenList[_token].buyOrderBook[_price].highestPriority = 1;
             tokenList[_token].buyOrderBook[_price].lowestPriority = 1;
             tokenList[_token].numOfBuyPrices = tokenList[_token].numOfBuyPrices + 1;
-            tokenList[_token].buyOrderBook[_price].orders[currNumberOfOrders] = Order(_amount, _owner, 0, 1);
+            tokenList[_token].buyOrderBook[_price].orders[currNumberOfOrders] = Order(_amount, _owner, _baseToken, 0, 1);
 
             uint256 currentBuyPrice = tokenList[_token].maxBuyPrice;
             uint256 lowestBuyPrice = tokenList[_token].minBuyPrice;
@@ -389,13 +390,13 @@ contract Dex {
         } else { // there are other orders of this price
             uint256 prevLowest = tokenList[_token].buyOrderBook[_price].lowestPriority;
             uint256 currentLowest = prevLowest + 1;
-            tokenList[_token].buyOrderBook[_price].orders[currentLowest] = Order(_amount, _owner, prevLowest, currentLowest);
+            tokenList[_token].buyOrderBook[_price].orders[currentLowest] = Order(_amount, _owner, _baseToken, prevLowest, currentLowest);
             tokenList[_token].buyOrderBook[_price].orders[prevLowest].lowerPriority = currentLowest;
             tokenList[_token].buyOrderBook[_price].lowestPriority = currentLowest;
         }
     }
 
-    function storeSellOrder(address _token,uint256 _price,uint256 _amount,address _owner) private {
+    function storeSellOrder(address _token, uint256 _price,uint256 _amount,address _owner) private {
         tokenList[_token].sellOrderBook[_price].numOfOrders = tokenList[_token].sellOrderBook[_price].numOfOrders + 1;
         uint currNumberOfOrders = tokenList[_token].sellOrderBook[_price].numOfOrders;
 
@@ -403,7 +404,7 @@ contract Dex {
             tokenList[_token].sellOrderBook[_price].highestPriority = 1;
             tokenList[_token].sellOrderBook[_price].lowestPriority = 1;
             tokenList[_token].numOfSellPrices = tokenList[_token].numOfSellPrices + 1;
-            tokenList[_token].sellOrderBook[_price].orders[currNumberOfOrders] = Order(_amount, _owner, 0, 1);
+            tokenList[_token].sellOrderBook[_price].orders[currNumberOfOrders] = Order(_amount, _owner, _token, 0, 1);
 
             uint256 currentSellPrice = tokenList[_token].minSellPrice;
             uint256 highestSellPrice = tokenList[_token].maxSellPrice;
@@ -442,7 +443,7 @@ contract Dex {
         } else { 
             uint256 prevLowest = tokenList[_token].sellOrderBook[_price].lowestPriority;
             uint256 currentLowest = prevLowest + 1;
-            tokenList[_token].sellOrderBook[_price].orders[currNumberOfOrders] = Order(_amount, _owner, prevLowest, currentLowest);
+            tokenList[_token].sellOrderBook[_price].orders[currNumberOfOrders] = Order(_amount, _owner, _token, prevLowest, currentLowest);
             tokenList[_token].sellOrderBook[_price].orders[prevLowest].lowerPriority = currentLowest;
             tokenList[_token].sellOrderBook[_price].lowestPriority = currentLowest;
         }
@@ -564,6 +565,11 @@ contract Dex {
             }
         } 
     }
+
+    // function cancelUserBuyOrder(address _baseToken, address _token, uint256 _price, uint256 baseTokenValue) public {
+    //     Token storage loadedToken = tokenList[_token];
+
+    // }
 
     function getUserSellOrders(address _token) public view returns (uint256[] memory, uint256[] memory) {
         uint256 sellPrice = tokenList[_token].minSellPrice;
@@ -868,14 +874,23 @@ contract Dex {
         return orderBookInfo;
     }
 
-    function retrieveOrderInfo(address tokenAddress, uint256 price, bool isBuy) public view returns (address) {
-        address owner;
+    function retrieveOrderInfo(address tokenAddress, uint256 price, uint256 index, bool isBuy) public view returns (address[] memory, uint256[] memory) {
+        address[] memory addressArr = new address[](2);
+        uint256[] memory uintArr = new uint256[](3);
         if (isBuy) {
-            owner = tokenList[tokenAddress].buyOrderBook[price].orders[1].owner;
+            addressArr[0] = tokenList[tokenAddress].buyOrderBook[price].orders[index].owner;
+            addressArr[1] = tokenList[tokenAddress].buyOrderBook[price].orders[index].sacrificedToken;
+            uintArr[0] = tokenList[tokenAddress].buyOrderBook[price].orders[index].amount;
+            uintArr[1] = tokenList[tokenAddress].buyOrderBook[price].orders[index].higherPriority;
+            uintArr[2] = tokenList[tokenAddress].buyOrderBook[price].orders[index].lowerPriority;
         } else {
-            owner = tokenList[tokenAddress].sellOrderBook[price].orders[1].owner;
+            addressArr[0] = tokenList[tokenAddress].sellOrderBook[price].orders[index].owner;
+            addressArr[1] = tokenList[tokenAddress].sellOrderBook[price].orders[index].sacrificedToken;
+            uintArr[0] = tokenList[tokenAddress].sellOrderBook[price].orders[index].amount;
+            uintArr[1] = tokenList[tokenAddress].sellOrderBook[price].orders[index].higherPriority;
+            uintArr[2] = tokenList[tokenAddress].sellOrderBook[price].orders[index].lowerPriority;
         }
 
-        return owner;
+        return (addressArr, uintArr);
     }
 }

@@ -40,11 +40,15 @@ contract Dex {
 
     mapping(address => string[]) tokensInAddress;    
 
+    bool result;
+
     event BuyMarketResult(bool fulfilled, bool insufficientEth, bool insufficientOrder);
 
     event SellMarketResult(bool fulfilled, bool insufficientToken, bool insufficientOrder);
 
     event approveAndExchangeTokenResult(address _tokenA, address _tokenB, address ownerA, address ownerB, uint256 amountA, uint256 amountB);
+
+    event userOrderCancelledResult(bool result);
 
     function buyTokenMarket(address _baseToken, address _token, uint256 _amount, uint256 baseTokenValue) public returns (bool[] memory) {
         Token storage loadedToken = tokenList[_token];
@@ -78,7 +82,7 @@ contract Dex {
                     if (getTokenBalance(msg.sender, _baseToken) >= baseTokenAmount) { // sufficient ether
                         sacrifice(_baseToken, msg.sender, baseTokenAmount);
                         approveAndExchangeToken(_baseToken, _token, msg.sender, loadedToken.sellOrderBook[buyPrice].orders[offerPointer].owner, baseTokenAmount, volumeAtPointer);
-                                                loadedToken.sellOrderBook[buyPrice].orders[offerPointer].amount = 0;
+                        loadedToken.sellOrderBook[buyPrice].orders[offerPointer].amount = 0;
                         loadedToken.sellOrderBook[buyPrice].highestPriority = loadedToken.sellOrderBook[buyPrice].orders[offerPointer].lowerPriority; // Reassign LL pointer
 
                         remainingAmount = remainingAmount- volumeAtPointer;
@@ -566,10 +570,65 @@ contract Dex {
         } 
     }
 
-    // function cancelUserBuyOrder(address _baseToken, address _token, uint256 _price, uint256 baseTokenValue) public {
-    //     Token storage loadedToken = tokenList[_token];
-
-    // }
+    function cancelUserBuyOrder(address _baseToken, address _token, uint256 _price, uint256 baseTokenValue) public {
+        Token storage loadedToken = tokenList[_token];
+        uint256 offerPointer;
+        uint256 lowerPointer;
+        uint256 higherPointer;
+        // might have key not found error if price does not exist in orderbook
+        if (loadedToken.buyOrderBook[_price].numOfOrders == 1 && loadedToken.numOfBuyPrices == 1 && loadedToken.buyOrderBook[_price].orders[1].owner == msg.sender) {
+            clearOrderBook(_token, _price, false);
+            loadedToken.buyOrderBook[_price].orders[1].amount = 0;
+            emit userOrderCancelledResult(true);                
+        } else if (loadedToken.buyOrderBook[_price].numOfOrders == 1 && loadedToken.buyOrderBook[_price].orders[1].owner == msg.sender) {
+            if (_price == loadedToken.minBuyPrice) {
+                higherPointer = loadedToken.buyOrderBook[_price].higherPrice;
+                loadedToken.minBuyPrice = higherPointer;
+                loadedToken.buyOrderBook[higherPointer].lowerPrice = higherPointer;
+            } else if (_price == loadedToken.maxBuyPrice) {
+                lowerPointer = loadedToken.buyOrderBook[_price].lowerPrice;
+                loadedToken.maxBuyPrice = lowerPointer;
+                loadedToken.buyOrderBook[lowerPointer].higherPrice = lowerPointer;
+            } else {
+                lowerPointer = loadedToken.buyOrderBook[_price].lowerPrice;
+                higherPointer = loadedToken.buyOrderBook[_price].higherPrice;
+                loadedToken.buyOrderBook[lowerPointer].higherPrice = higherPointer;
+                loadedToken.buyOrderBook[higherPointer].lowerPrice = lowerPointer;
+            }
+            loadedToken.numOfBuyPrices -= 1;
+            loadedToken.buyOrderBook[_price].numOfOrders = 0;
+            emit userOrderCancelledResult(true);
+        } else { // loadedToken.buyOrderBook[_price].numOfOrders > 1 && loadedToken.numOfBuyPrices > 1
+            offerPointer = loadedToken.buyOrderBook[_price].highestPriority;
+            while (offerPointer <= loadedToken.buyOrderBook[_price].numOfOrders) {
+                if (loadedToken.buyOrderBook[_price].orders[offerPointer].owner == msg.sender) {
+                    if (offerPointer == loadedToken.buyOrderBook[_price].lowestPriority) { // top of orderbook
+                        higherPointer = loadedToken.buyOrderBook[_price].orders[offerPointer].higherPriority;
+                        loadedToken.buyOrderBook[_price].orders[higherPointer].lowerPriority = higherPointer;
+                        loadedToken.buyOrderBook[_price].numOfOrders -= 1;
+                        emit userOrderCancelledResult(true);
+                        break;
+                    } else if (offerPointer == loadedToken.buyOrderBook[_price].highestPriority) {// bottom of orderbook 
+                        lowerPointer = loadedToken.buyOrderBook[_price].orders[offerPointer].lowerPriority;
+                        loadedToken.buyOrderBook[_price].orders[lowerPointer].higherPriority = lowerPointer;
+                        loadedToken.buyOrderBook[_price].numOfOrders -= 1;
+                        emit userOrderCancelledResult(true);
+                        break;
+                    } else { // in the middle of orderbook
+                        lowerPointer = loadedToken.buyOrderBook[_price].orders[offerPointer].lowerPriority;
+                        higherPointer = loadedToken.buyOrderBook[_price].orders[offerPointer].higherPriority;
+                        loadedToken.buyOrderBook[_price].orders[lowerPointer].higherPriority = higherPointer;
+                        loadedToken.buyOrderBook[_price].orders[higherPointer].lowerPriority = lowerPointer;
+                        loadedToken.buyOrderBook[_price].numOfOrders -= 1;
+                        emit userOrderCancelledResult(true);
+                        break;
+                    }
+                }
+                offerPointer = offerPointer + 1;
+            }
+            emit userOrderCancelledResult(false);
+        }        
+    }
 
     function getUserSellOrders(address _token) public view returns (uint256[] memory, uint256[] memory) {
         uint256 sellPrice = tokenList[_token].minSellPrice;

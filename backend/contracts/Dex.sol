@@ -565,13 +565,6 @@ contract Dex {
         } 
     }
 
-    function saveTheTribute(address _tokenA, address owner, uint256 amountA) public {
-        ERC20 tokenA = ERC20(_tokenA);
-
-        tokenA.approve(address(this), owner, amountA);
-        tokenA.transferFrom(address(this), owner, amountA);
-    }
-
     function getUserSellOrders(address _token) public view returns (uint256[] memory, uint256[] memory) {
         uint256 sellPrice = tokenList[_token].minSellPrice;
         uint256 counter = 0;
@@ -615,13 +608,13 @@ contract Dex {
                 }
                 if (offered) {
                     ordersVolumes[counter] = priceVolume;
+                    counter = counter + 1;
                 }
                 if (sellPrice == tokenList[_token].sellOrderBook[sellPrice].higherPrice) {
                     break;
                 } else {
                     sellPrice = tokenList[_token].sellOrderBook[sellPrice].higherPrice;
                 }
-                counter = counter + 1;
             }
         }
         return (ordersPrices, ordersVolumes);
@@ -673,6 +666,7 @@ contract Dex {
                 }
                 if (offered) {
                     ordersVolumes[counter] = priceVolume;
+                    counter = counter + 1;
                 }
 
                 if (buyPrice == tokenList[_token].buyOrderBook[buyPrice].higherPrice) {
@@ -680,7 +674,6 @@ contract Dex {
                 } else {
                     buyPrice = tokenList[_token].buyOrderBook[buyPrice].higherPrice;
                 }
-                counter = counter + 1;
             }
         }
 
@@ -801,17 +794,11 @@ contract Dex {
         tokenA.transferFrom(owner, address(this), amountA);
     }
 
-    modifier ethRequiredCheck(uint256 _price, uint256 _amount) {
-        uint256 ethRequired = _price * _amount;
-        require(
-            ethRequired >= _amount,
-            "buy/sell TokenLimit: Eth required is < than amount"
-        );
-        require(
-            ethRequired >= _price,
-            "buy/sell TokenLimit: Eth required is < than price"
-        );
-        _;
+    function saveTheTribute(address _tokenA, address owner, uint256 amountA) public {
+        ERC20 tokenA = ERC20(_tokenA);
+
+        tokenA.approve(address(this), owner, amountA);
+        tokenA.transferFrom(address(this), owner, amountA);
     }
 
     function approveAndExchangeToken(address _tokenA, address _tokenB, address ownerA, address ownerB, uint256 amountA, uint256 amountB) public {
@@ -860,5 +847,35 @@ contract Dex {
         tokenInfo[5] = tokenList[tokenAddress].numOfBuyPrices;
 
         return tokenInfo;
+    }
+
+    function retrieveOrderBookInfo(address tokenAddress, uint256 price, bool isBuy) public view returns (uint256[] memory) {
+        uint256[] memory orderBookInfo = new uint256[](5);
+        if (isBuy) {
+            orderBookInfo[0] = tokenList[tokenAddress].buyOrderBook[price].higherPrice;
+            orderBookInfo[1] = tokenList[tokenAddress].buyOrderBook[price].lowerPrice;
+            orderBookInfo[2] = tokenList[tokenAddress].buyOrderBook[price].highestPriority;
+            orderBookInfo[3] = tokenList[tokenAddress].buyOrderBook[price].lowestPriority;
+            orderBookInfo[4] = tokenList[tokenAddress].buyOrderBook[price].numOfOrders;
+        } else {
+            orderBookInfo[0] = tokenList[tokenAddress].sellOrderBook[price].higherPrice;
+            orderBookInfo[1] = tokenList[tokenAddress].sellOrderBook[price].lowerPrice;
+            orderBookInfo[2] = tokenList[tokenAddress].sellOrderBook[price].highestPriority;
+            orderBookInfo[3] = tokenList[tokenAddress].sellOrderBook[price].lowestPriority;
+            orderBookInfo[4] = tokenList[tokenAddress].sellOrderBook[price].numOfOrders;
+        }
+
+        return orderBookInfo;
+    }
+
+    function retrieveOrderInfo(address tokenAddress, uint256 price, bool isBuy) public view returns (address) {
+        address owner;
+        if (isBuy) {
+            owner = tokenList[tokenAddress].buyOrderBook[price].orders[1].owner;
+        } else {
+            owner = tokenList[tokenAddress].sellOrderBook[price].orders[1].owner;
+        }
+
+        return owner;
     }
 }

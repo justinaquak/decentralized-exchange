@@ -441,6 +441,162 @@ contract Dex {
         }
     }
 
+    function batchExecutionBuy(address _gold, address _silver, address _bronze) public {
+        uint256 goldAmt = 0;
+        uint256 silverAmt = 0;
+        uint256 bronzeAmt = 0;
+        uint256 offerPointer;
+        uint256 numOfSets;
+        if (tokenList[_gold].numOfBuyPrices >= 1 && tokenList[_silver].numOfBuyPrices >= 1 && tokenList[_bronze].numOfBuyPrices >= 1) {
+            // gold -> silver -> bronze
+            offerPointer = tokenList[_gold].buyOrderBook[100].highestPriority; 
+            while (offerPointer <= tokenList[_gold].buyOrderBook[100].lowestPriority) {
+                goldAmt = goldAmt + tokenList[_gold].buyOrderBook[100].orders[offerPointer].amount;
+                offerPointer += 1;
+            }
+            offerPointer = tokenList[_silver].buyOrderBook[10].highestPriority; 
+            while (offerPointer <= tokenList[_silver].buyOrderBook[10].lowestPriority) {
+                silverAmt = silverAmt + tokenList[_silver].buyOrderBook[10].orders[offerPointer].amount;
+                offerPointer += 1;
+            }
+            offerPointer = tokenList[_bronze].buyOrderBook[1].highestPriority; 
+            while (offerPointer <= tokenList[_bronze].buyOrderBook[1].lowestPriority) {
+                bronzeAmt = bronzeAmt + tokenList[_bronze].buyOrderBook[1].orders[offerPointer].amount;
+                offerPointer += 1;
+            }
+            if (goldAmt >= 1 && silverAmt >= 10 && bronzeAmt >= 100) {
+                numOfSets = goldAmt;
+                if (silverAmt/10 < numOfSets){
+                    numOfSets = silverAmt/10;
+                } 
+                if (bronzeAmt/100 < numOfSets) {
+                    numOfSets = bronzeAmt/100;
+                }
+                goldAmt = numOfSets;
+                silverAmt = numOfSets*10;
+                bronzeAmt = numOfSets*100;
+
+                iterateThroughBuyOrders(_gold, 100, goldAmt);
+                iterateThroughBuyOrders(_silver, 10, silverAmt);
+                iterateThroughBuyOrders(_bronze, 1, bronzeAmt);
+            }
+        }
+    }
+
+    function iterateThroughBuyOrders(address _token, uint256 price, uint256 amount) public {
+        uint256 offerPointer;
+        uint256 volumeAtPointer;
+        offerPointer = tokenList[_token].buyOrderBook[price].highestPriority; 
+        while (offerPointer <= tokenList[_token].buyOrderBook[price].lowestPriority && amount > 0) {
+            volumeAtPointer = tokenList[_token].buyOrderBook[price].orders[offerPointer].amount;
+            if (volumeAtPointer <= amount) {
+                saveTheTribute(_token, tokenList[_token].buyOrderBook[price].orders[offerPointer].owner, volumeAtPointer);
+                tokenList[_token].buyOrderBook[price].orders[offerPointer].amount = 0;
+                amount -= volumeAtPointer;
+                tokenList[_token].buyOrderBook[price].highestPriority = tokenList[_token].buyOrderBook[price].orders[offerPointer].lowerPriority;
+            } else {
+                saveTheTribute(_token, tokenList[_token].buyOrderBook[price].orders[offerPointer].owner, amount);
+                tokenList[_token].buyOrderBook[price].orders[offerPointer].amount -= amount;
+                amount = 0;
+            }
+
+            if (offerPointer == tokenList[_token].buyOrderBook[price].lowestPriority &&
+                tokenList[_token].buyOrderBook[price].orders[offerPointer].amount == 0) {
+                tokenList[_token].numOfBuyPrices = tokenList[_token].numOfBuyPrices - 1;
+                tokenList[_token].buyOrderBook[price].numOfOrders = 0;
+
+                if (tokenList[_token].buyOrderBook[price].higherPrice == price ||
+                    tokenList[_token].buyOrderBook[price].higherPrice == 0) {
+                    clearOrderBook(_token, price, false);
+                } else {
+                    tokenList[_token].minSellPrice = tokenList[_token].buyOrderBook[price].higherPrice;
+                    tokenList[_token].sellOrderBook[tokenList[_token].buyOrderBook[price].higherPrice].lowerPrice = 0;
+                }
+                break;
+            } 
+
+            offerPointer = tokenList[_token].buyOrderBook[price].orders[offerPointer].lowerPriority;
+        }
+    }
+
+    function batchExecutionSell(address _gold, address _silver, address _bronze) public {
+        uint256 goldAmt = 0;
+        uint256 silverAmt = 0;
+        uint256 bronzeAmt = 0;
+        uint256 offerPointer;
+        uint256 numOfSets;
+        if (tokenList[_gold].numOfSellPrices >= 1 && tokenList[_silver].numOfSellPrices >= 1 && tokenList[_bronze].numOfSellPrices >= 1) {
+            // gold -> silver -> bronze
+            offerPointer = tokenList[_gold].sellOrderBook[100].highestPriority; 
+            while (offerPointer <= tokenList[_gold].sellOrderBook[100].lowestPriority) {
+                goldAmt = goldAmt + tokenList[_gold].sellOrderBook[100].orders[offerPointer].amount;
+                offerPointer += 1;
+            }
+            offerPointer = tokenList[_silver].sellOrderBook[10].highestPriority; 
+            while (offerPointer <= tokenList[_silver].sellOrderBook[10].lowestPriority) {
+                silverAmt = silverAmt + tokenList[_silver].sellOrderBook[10].orders[offerPointer].amount;
+                offerPointer += 1;
+            }
+            offerPointer = tokenList[_bronze].sellOrderBook[1].highestPriority; 
+            while (offerPointer <= tokenList[_bronze].sellOrderBook[1].lowestPriority) {
+                bronzeAmt = bronzeAmt + tokenList[_bronze].sellOrderBook[1].orders[offerPointer].amount;
+                offerPointer += 1;
+            }
+            if (goldAmt >= 1 && silverAmt >= 10 && bronzeAmt >= 100) {
+                numOfSets = goldAmt;
+                if (silverAmt/10 < numOfSets){
+                    numOfSets = silverAmt/10;
+                } 
+                if (bronzeAmt/100 < numOfSets) {
+                    numOfSets = bronzeAmt/100;
+                }
+                goldAmt = numOfSets;
+                silverAmt = numOfSets*10;
+                bronzeAmt = numOfSets*100;
+
+                iterateThroughSellOrders(_gold, 100, goldAmt);
+                iterateThroughSellOrders(_silver, 10, silverAmt);
+                iterateThroughSellOrders(_bronze, 1, bronzeAmt);
+            }
+        }
+    }
+
+    function iterateThroughSellOrders(address _token, uint256 price, uint256 amount) public {
+        uint256 offerPointer;
+        uint256 volumeAtPointer;
+        offerPointer = tokenList[_token].sellOrderBook[price].highestPriority; 
+        while (offerPointer <= tokenList[_token].sellOrderBook[price].lowestPriority && amount > 0) {
+            volumeAtPointer = tokenList[_token].sellOrderBook[price].orders[offerPointer].amount;
+            if (volumeAtPointer <= amount) {
+                saveTheTribute(tokenList[_token].sellOrderBook[price].orders[offerPointer].sacrificedToken, tokenList[_token].sellOrderBook[price].orders[offerPointer].owner, volumeAtPointer);
+                tokenList[_token].sellOrderBook[price].orders[offerPointer].amount = 0;
+                amount -= volumeAtPointer;
+                tokenList[_token].sellOrderBook[price].highestPriority = tokenList[_token].sellOrderBook[price].orders[offerPointer].lowerPriority;
+            } else {
+                saveTheTribute(tokenList[_token].sellOrderBook[price].orders[offerPointer].sacrificedToken, tokenList[_token].sellOrderBook[price].orders[offerPointer].owner, amount);
+                tokenList[_token].sellOrderBook[price].orders[offerPointer].amount -= amount;
+                amount = 0;
+            }
+
+            if (offerPointer == tokenList[_token].sellOrderBook[price].lowestPriority &&
+                tokenList[_token].sellOrderBook[price].orders[offerPointer].amount == 0) {
+                tokenList[_token].numOfSellPrices = tokenList[_token].numOfSellPrices - 1;
+                tokenList[_token].sellOrderBook[price].numOfOrders = 0;
+
+                if (tokenList[_token].sellOrderBook[price].higherPrice == price ||
+                    tokenList[_token].sellOrderBook[price].higherPrice == 0) {
+                    clearOrderBook(_token, price, true);
+                } else {
+                    tokenList[_token].minSellPrice = tokenList[_token].sellOrderBook[price].higherPrice;
+                    tokenList[_token].sellOrderBook[tokenList[_token].sellOrderBook[price].higherPrice].lowerPrice = 0;
+                }
+                break;
+            } 
+
+            offerPointer = tokenList[_token].sellOrderBook[price].orders[offerPointer].lowerPriority;
+        }
+    }
+
     function cancelUserBuyOrder(address _token, address owner, uint256 _price, uint256 baseTokenValue) public {
         Token storage loadedToken = tokenList[_token];
         uint256 offerPointer;

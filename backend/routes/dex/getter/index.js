@@ -1,13 +1,11 @@
 const hre = require('hardhat')
-const {contractAddress, ironAddress, goldAddress, silverAddress, bronzeAddress} = require('../constants.js')
+const {contractAddress, goldAddress, silverAddress, bronzeAddress} = require('../constants.js')
 
 async function getByBuySellOrder(req, res) {
   const preResponse = async () => {
     const dexContract = await hre.ethers.getContractAt('Dex', contractAddress)
     const [owner, actor] = await hre.ethers.getSigners()
 
-    const ironBuyOrders = await dexContract.getBuyOrders(ironAddress);
-    const ironSellOrders = await dexContract.getSellOrders(ironAddress);
     const goldBuyOrders = await dexContract.getBuyOrders(goldAddress);
     const goldSellOrders = await dexContract.getSellOrders(goldAddress);
     const silverBuyOrders = await dexContract.getBuyOrders(silverAddress);
@@ -15,8 +13,6 @@ async function getByBuySellOrder(req, res) {
     const bronzeBuyOrders = await dexContract.getBuyOrders(bronzeAddress);
     const bronzeSellOrders = await dexContract.getSellOrders(bronzeAddress);
 
-    console.log('IRON BUY\n', ironBuyOrders)
-    console.log('\nIRON SELL\n', ironSellOrders)
     console.log('\nGOLD BUY\n', goldBuyOrders)
     console.log('\nGOLD SELL\n', goldSellOrders)
     console.log('\nSILVER BUY\n', silverBuyOrders)
@@ -40,8 +36,6 @@ async function getByUserBuySellOrder(req, res) {
     const dexContract = await hre.ethers.getContractAt('Dex', contractAddress)
     const [owner, actor] = await hre.ethers.getSigners()
 
-    const ironBuyOrders = await dexContract.getUserBuyOrders(ironAddress);
-    const ironSellOrders = await dexContract.getUserSellOrders(ironAddress);
     const goldBuyOrders = await dexContract.getUserBuyOrders(goldAddress);
     const goldSellOrders = await dexContract.getUserSellOrders(goldAddress);
     const silverBuyOrders = await dexContract.getUserBuyOrders(silverAddress);
@@ -49,8 +43,6 @@ async function getByUserBuySellOrder(req, res) {
     const bronzeBuyOrders = await dexContract.getUserBuyOrders(bronzeAddress);
     const bronzeSellOrders = await dexContract.getUserSellOrders(bronzeAddress);
 
-    console.log('IRON BUY\n', ironBuyOrders)
-    console.log('\nIRON SELL\n', ironSellOrders)
     console.log('\nGOLD BUY\n', goldBuyOrders)
     console.log('\nGOLD SELL\n', goldSellOrders)
     console.log('\nSILVER BUY\n', silverBuyOrders)

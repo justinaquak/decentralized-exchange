@@ -4,7 +4,7 @@ const getter = require('./getter')
 const orders = require('./orders')
 const transfer = require('./transfer')
 
-const {contractAddress, ironAddress, goldAddress, silverAddress, bronzeAddress} = require('./constants.js')
+const {contractAddress, goldAddress, silverAddress, bronzeAddress} = require('./constants.js')
 
 async function contractInteractToken(req, res) {
   const preResponse = async () => {
@@ -22,12 +22,18 @@ async function contractInteractToken(req, res) {
 async function contractInteractLogic(req, res) {
   const preResponse = async () => {
     const dexContract = await hre.ethers.getContractAt('Dex', contractAddress)
-    const ironContract = await hre.ethers.getContractAt('IRON', ironAddress)
     const goldContract = await hre.ethers.getContractAt('GOLD', goldAddress)
     const silverContract = await hre.ethers.getContractAt('SILVER', silverAddress)
     const bronzeContract = await hre.ethers.getContractAt('BRONZE', bronzeAddress)
 
     const [owner, actor, third] = await hre.ethers.getSigners()
+
+    const buyTokenLimit = await dexContract.connect(owner).buyTokenLimit(goldAddress, silverAddress, 100, 10, 1000);
+    await buyTokenLimit.wait()
+    // const buyTokenLimit1 = await dexContract.connect(actor).buyTokenLimit(silverAddress, bronzeAddress, 10, 100, 100);
+    // await buyTokenLimit1.wait()
+    // const buyTokenLimit2 = await dexContract.connect(actor).buyTokenLimit(bronzeAddress, goldAddress, 1000, 1, 10);
+    // await buyTokenLimit2.wait()
 
     // const sellTokenLimit = await dexContract.connect(owner).sellTokenLimit(goldAddress, silverAddress, 100, 100, 1000);
     // await sellTokenLimit.wait()
@@ -35,15 +41,14 @@ async function contractInteractLogic(req, res) {
     // const silverSellOrders1 = await dexContract.getSellOrders(silverAddress);
     // console.log('\nSILVER BUY\n', silverBuyOrders1)
     // console.log('\nSILVER SELL\n', silverSellOrders1)
-    const buyTokenLimit = await dexContract.connect(actor).buyTokenLimit(goldAddress, silverAddress, 100, 130, 1000);
-    await buyTokenLimit.wait()
-    const silverBuyOrders = await dexContract.getBuyOrders(silverAddress);
-    const silverSellOrders = await dexContract.getSellOrders(silverAddress);
-    console.log('\nSILVER BUY\n', silverBuyOrders)
-    console.log('\nSILVER SELL\n', silverSellOrders)
+    // const buyTokenLimit = await dexContract.connect(actor).buyTokenLimit(goldAddress, silverAddress, 100, 130, 1000);
+    // await buyTokenLimit.wait()
+    // const silverBuyOrders = await dexContract.getBuyOrders(silverAddress);
+    // const silverSellOrders = await dexContract.getSellOrders(silverAddress);
+    // console.log('\nSILVER BUY\n', silverBuyOrders)
+    // console.log('\nSILVER SELL\n', silverSellOrders)
 
     // APPROVES AND REDUCE AND BALANCE
-    // const approve = await ironContract.approve(owner.address, contractAddress, 1000)
     // await approve.wait()
     // const reduce = await goldContract.reduceAllowance(owner.address, actor.address, 1000)
     // await reduce.wait()

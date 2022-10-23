@@ -2,9 +2,6 @@ const hre = require('hardhat')
 
 async function contractCreateToken(req, res) {
   const preResponse = async () => {
-    const iron = await hre.ethers.getContractFactory('IRON')
-    const deployIron = await iron.deploy()
-    await deployIron.deployed()
     const gold = await hre.ethers.getContractFactory('GOLD')
     const deployGold = await gold.deploy()
     await deployGold.deployed()
@@ -14,7 +11,7 @@ async function contractCreateToken(req, res) {
     const bronze = await hre.ethers.getContractFactory('BRONZE')
     const deployBronze = await bronze.deploy()
     await deployBronze.deployed()
-    return [ deployIron.address, deployGold.address, deploySilver.address, deployBronze.address ]
+    return [ deployGold.address, deploySilver.address, deployBronze.address ]
   }
 
   try {

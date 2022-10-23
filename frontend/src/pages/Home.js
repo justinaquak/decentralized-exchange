@@ -7,7 +7,6 @@ import Card from '../components/Card';
 import './styles.css';
 
 const option = [
-  {value: 'IRON', label: 'IRON'},
   {value: 'GOLD', label: 'GOLD'},
   {value: 'SILVER', label: 'SILVER'},
   {value: 'BRONZE', label: 'BRONZE'},

@@ -1,9 +1,8 @@
 const hre = require('hardhat')
-const {contractAddress, ironAddress, goldAddress, silverAddress, bronzeAddress} = require('../constants.js')
+const {contractAddress, goldAddress, silverAddress, bronzeAddress} = require('../constants.js')
 const goldValue = 1000
 const silverValue = 100
 const bronzeValue = 10
-const ironValue = 1
 
 // async function contractInteractToken(req, res) {
 //   const preResponse = async () => {
@@ -54,9 +53,6 @@ const getAddress = (tokenName) => {
     case "BRONZE":
       contractAddress = bronzeAddress
       break
-    case "IRON":
-      contractAddress = ironAddress
-      break
   }
   return contractAddress
 }
@@ -72,9 +68,6 @@ const getValue = (tokenName) => {
       break
     case "BRONZE":
       value = bronzeValue
-      break
-    case "IRON":
-      value = ironValue
       break
   }
   return value

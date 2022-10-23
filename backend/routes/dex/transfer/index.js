@@ -1,15 +1,9 @@
 const hre = require('hardhat')
-const {contractAddress, ironAddress, goldAddress, silverAddress, bronzeAddress} = require('../constants.js')
+const {contractAddress, goldAddress, silverAddress, bronzeAddress} = require('../constants.js')
 const AMOUNT = 10000
 
 async function addressTransferLogic(req, res) {
     const [owner, actor, third] = await hre.ethers.getSigners()
-    const transferIron = async () => {
-      const ironContract = await hre.ethers.getContractAt('IRON', ironAddress)
-  
-      const transfer = await ironContract.transfer(actor.address, AMOUNT)
-      await transfer.wait()
-    }
   
     const transferGold = async () => {
       const goldContract = await hre.ethers.getContractAt('GOLD', goldAddress)
@@ -33,7 +27,6 @@ async function addressTransferLogic(req, res) {
     }
   
     try {
-      await transferIron();
       await transferGold();
       await transferSilver();
       await transferBronze();
@@ -44,13 +37,6 @@ async function addressTransferLogic(req, res) {
   }
 
 async function contractTransferLogic(req, res) {
-  const transferIron = async () => {
-    const ironContract = await hre.ethers.getContractAt('IRON', ironAddress)
-
-    const transfer = await ironContract.transfer(contractAddress, AMOUNT)
-    await transfer.wait()
-  }
-
   const transferGold = async () => {
     const goldContract = await hre.ethers.getContractAt('GOLD', goldAddress)
 
@@ -73,7 +59,6 @@ async function contractTransferLogic(req, res) {
   }
 
   try {
-    await transferIron();
     await transferGold();
     await transferSilver();
     await transferBronze();

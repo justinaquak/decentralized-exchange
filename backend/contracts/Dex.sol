@@ -48,8 +48,6 @@ contract Dex {
 
     event approveAndExchangeTokenResult(address _tokenA, address _tokenB, address ownerA, address ownerB, uint256 amountA, uint256 amountB);
 
-    event userOrderCancelledResult(bool result);
-
     function buyTokenMarket(address _baseToken, address _token, uint256 _amount, uint256 baseTokenValue) public returns (bool[] memory) {
         Token storage loadedToken = tokenList[_token];
         uint256 remainingAmount = _amount; // order volume
@@ -443,7 +441,7 @@ contract Dex {
         }
     }
 
-    function cancelUserBuyOrder(address _baseToken, address _token, address owner, uint256 _price, uint256 baseTokenValue) public {
+    function cancelUserBuyOrder(address _token, address owner, uint256 _price, uint256 baseTokenValue) public {
         Token storage loadedToken = tokenList[_token];
         uint256 offerPointer;
         uint256 lowerPointer;
@@ -510,7 +508,7 @@ contract Dex {
         }        
     }
 
-    function cancelUserSellOrder(address _baseToken, address _token, address owner, uint256 _price, uint256 baseTokenValue) public {
+    function cancelUserSellOrder(address _token, address owner, uint256 _price, uint256 baseTokenValue) public {
         Token storage loadedToken = tokenList[_token];
         uint256 offerPointer;
         uint256 lowerPointer;

@@ -637,6 +637,73 @@ contract Dex {
         }        
     }
 
+    function cancelUserSellOrder(address _baseToken, address _token, address owner, uint256 _price, uint256 baseTokenValue) public {
+        Token storage loadedToken = tokenList[_token];
+        uint256 offerPointer;
+        uint256 lowerPointer;
+        uint256 higherPointer;
+        address sacrificedToken;
+        uint256 amount;
+        result = false;
+        // might have key not found error if price does not exist in orderbook
+        if (loadedToken.sellOrderBook[_price].numOfOrders == 1) {
+            if (loadedToken.sellOrderBook[_price].orders[1].owner == owner){
+                saveTheTribute(loadedToken.sellOrderBook[_price].orders[1].sacrificedToken, owner, loadedToken.sellOrderBook[_price].orders[1].amount*_price/baseTokenValue);
+                result = true;
+                if (loadedToken.numOfBuyPrices == 1) {
+                    clearOrderBook(_token, _price, false);
+                    loadedToken.sellOrderBook[_price].orders[1].amount = 0; 
+                } else {
+                    // Rearrange price pointers
+                    if (_price == loadedToken.minSellPrice) {
+                        higherPointer = loadedToken.sellOrderBook[_price].higherPrice;
+                        loadedToken.minSellPrice = higherPointer;
+                        loadedToken.sellOrderBook[higherPointer].lowerPrice = higherPointer;
+                    } else if (_price == loadedToken.maxSellPrice) {
+                        lowerPointer = loadedToken.sellOrderBook[_price].lowerPrice;
+                        loadedToken.maxSellPrice = lowerPointer;
+                        loadedToken.sellOrderBook[lowerPointer].higherPrice = lowerPointer;
+                    } else {
+                        lowerPointer = loadedToken.sellOrderBook[_price].lowerPrice;
+                        higherPointer = loadedToken.sellOrderBook[_price].higherPrice;
+                        loadedToken.sellOrderBook[lowerPointer].higherPrice = higherPointer;
+                        loadedToken.sellOrderBook[higherPointer].lowerPrice = lowerPointer;
+                    }
+                    loadedToken.numOfSellPrices -= 1;
+                    loadedToken.sellOrderBook[_price].numOfOrders = 0;
+                    loadedToken.sellOrderBook[_price].orders[1].amount = 0;
+                }
+            }    
+        } else { // loadedToken.sellOrderBook[_price].numOfOrders > 1
+            offerPointer = loadedToken.sellOrderBook[_price].highestPriority;
+            while (offerPointer <= loadedToken.sellOrderBook[_price].numOfOrders) {
+                if (loadedToken.sellOrderBook[_price].orders[offerPointer].owner == owner) {
+                    if (offerPointer == loadedToken.sellOrderBook[_price].lowestPriority) { // top of orderbook
+                        sacrificedToken = loadedToken.sellOrderBook[_price].orders[offerPointer].sacrificedToken;
+                        amount = loadedToken.sellOrderBook[_price].orders[offerPointer].amount;
+                        higherPointer = loadedToken.sellOrderBook[_price].orders[offerPointer].higherPriority;
+                        loadedToken.sellOrderBook[_price].orders[higherPointer].lowerPriority = higherPointer;
+                        result = true;
+                        break;
+                    }else { // bottom or in the middle of orderbook
+                        sacrificedToken = loadedToken.sellOrderBook[_price].orders[offerPointer].sacrificedToken;
+                        amount = loadedToken.sellOrderBook[_price].orders[offerPointer].amount;
+                        reorderPointers(_token, _price, offerPointer, false);
+                        result = true;
+                        break;
+                    }
+                }
+                offerPointer = offerPointer + 1;
+            }
+            if (result) {
+                saveTheTribute(sacrificedToken, owner, amount);
+                delete loadedToken.sellOrderBook[_price].orders[loadedToken.sellOrderBook[_price].numOfOrders]; // delete last order
+                loadedToken.sellOrderBook[_price].numOfOrders -= 1;
+                loadedToken.sellOrderBook[_price].lowestPriority -= 1;
+            }
+        }        
+    }
+
     function reorderPointers(address _token, uint256 _price, uint256 offerPointer, bool isBuy) public {
         Token storage loadedToken = tokenList[_token];
         if (isBuy) {
@@ -644,6 +711,12 @@ contract Dex {
                 loadedToken.buyOrderBook[_price].orders[i+1].lowerPriority -= 1;
                 loadedToken.buyOrderBook[_price].orders[i+1].higherPriority -= 1;
                 loadedToken.buyOrderBook[_price].orders[i] = loadedToken.buyOrderBook[_price].orders[i+1];
+            }
+        } else {
+            for (uint i = offerPointer; i < loadedToken.sellOrderBook[_price].numOfOrders; i++) {
+                loadedToken.sellOrderBook[_price].orders[i+1].lowerPriority -= 1;
+                loadedToken.sellOrderBook[_price].orders[i+1].higherPriority -= 1;
+                loadedToken.sellOrderBook[_price].orders[i] = loadedToken.sellOrderBook[_price].orders[i+1];
             }
         }
     }

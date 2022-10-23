@@ -519,7 +519,7 @@ contract Dex {
         // might have key not found error if price does not exist in orderbook
         if (loadedToken.sellOrderBook[_price].numOfOrders == 1) {
             if (loadedToken.sellOrderBook[_price].orders[1].owner == owner){
-                saveTheTribute(loadedToken.sellOrderBook[_price].orders[1].sacrificedToken, owner, loadedToken.sellOrderBook[_price].orders[1].amount*_price/baseTokenValue);
+                saveTheTribute(loadedToken.sellOrderBook[_price].orders[1].sacrificedToken, owner, loadedToken.sellOrderBook[_price].orders[1].amount);
                 result = true;
                 if (loadedToken.numOfBuyPrices == 1) {
                     clearOrderBook(_token, _price, false);

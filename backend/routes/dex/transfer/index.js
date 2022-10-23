@@ -3,7 +3,7 @@ const {contractAddress, ironAddress, goldAddress, silverAddress, bronzeAddress} 
 const AMOUNT = 10000
 
 async function addressTransferLogic(req, res) {
-    const [owner, actor] = await hre.ethers.getSigners()
+    const [owner, actor, third] = await hre.ethers.getSigners()
     const transferIron = async () => {
       const ironContract = await hre.ethers.getContractAt('IRON', ironAddress)
   

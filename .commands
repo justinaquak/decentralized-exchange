@@ -95,18 +95,28 @@
 
 // PARTIAL ORDER - MORE THAN
 
-const sellTokenLimit = await dexContract.connect(owner).sellTokenLimit(goldAddress, silverAddress, 100, 100, 1000);
-await sellTokenLimit.wait()
-const silverBuyOrders1 = await dexContract.getBuyOrders(silverAddress);
-const silverSellOrders1 = await dexContract.getSellOrders(silverAddress);
-console.log('\nSILVER BUY\n', silverBuyOrders1)
-console.log('\nSILVER SELL\n', silverSellOrders1)
-const buyTokenLimit = await dexContract.connect(actor).buyTokenLimit(goldAddress, silverAddress, 100, 130, 1000);
-await buyTokenLimit.wait()
-const silverBuyOrders = await dexContract.getBuyOrders(silverAddress);
-const silverSellOrders = await dexContract.getSellOrders(silverAddress);
-console.log('\nSILVER BUY\n', silverBuyOrders)
-console.log('\nSILVER SELL\n', silverSellOrders)
+// const sellTokenLimit = await dexContract.connect(owner).sellTokenLimit(goldAddress, silverAddress, 100, 100, 1000);
+// await sellTokenLimit.wait()
+// const silverBuyOrders1 = await dexContract.getBuyOrders(silverAddress);
+// const silverSellOrders1 = await dexContract.getSellOrders(silverAddress);
+// console.log('\nSILVER BUY\n', silverBuyOrders1)
+// console.log('\nSILVER SELL\n', silverSellOrders1)
+// const buyTokenLimit = await dexContract.connect(actor).buyTokenLimit(goldAddress, silverAddress, 100, 130, 1000);
+// await buyTokenLimit.wait()
+// const silverBuyOrders = await dexContract.getBuyOrders(silverAddress);
+// const silverSellOrders = await dexContract.getSellOrders(silverAddress);
+// console.log('\nSILVER BUY\n', silverBuyOrders)
+// console.log('\nSILVER SELL\n', silverSellOrders)
+
+// CANCEL REMAINING ORDER
+// const cancelOrder = await dexContract.connect(actor).cancelUserBuyOrder(silverAddress, actor.address, 100, 1000);
+// await cancelOrder.wait()
+// const silverBuyOrders = await dexContract.getBuyOrders(silverAddress);
+// const silverSellOrders = await dexContract.getSellOrders(silverAddress);
+// console.log('\nSILVER BUY\n', silverBuyOrders)
+// console.log('\nSILVER SELL\n', silverSellOrders)
+// const contractBalance = await goldContract.balanceOf(contractAddress)
+// console.log(contractBalance)
 
 const buyTokenLimit = await dexContract.connect(actor).buyTokenLimit(goldAddress, silverAddress, 100, 100, 1000);
 await buyTokenLimit.wait()
@@ -120,3 +130,15 @@ const silverBuyOrders = await dexContract.getBuyOrders(silverAddress);
 const silverSellOrders = await dexContract.getSellOrders(silverAddress);
 console.log('\nSILVER BUY\n', silverBuyOrders)
 console.log('\nSILVER SELL\n', silverSellOrders)
+const contractBalance = await silverContract.balanceOf(contractAddress)
+console.log(contractBalance)
+
+CANCEL REMAINING ORDER
+const cancelOrder = await dexContract.connect(actor).cancelUserBuyOrder(silverAddress, actor.address, 100, 1000);
+await cancelOrder.wait()
+const silverBuyOrders = await dexContract.getBuyOrders(silverAddress);
+const silverSellOrders = await dexContract.getSellOrders(silverAddress);
+console.log('\nSILVER BUY\n', silverBuyOrders)
+console.log('\nSILVER SELL\n', silverSellOrders)
+const contractBalance = await goldContract.balanceOf(contractAddress)
+console.log(contractBalance)

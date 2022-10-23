@@ -54,7 +54,7 @@ async function contractInteractLogic(req, res) {
     // await reduce.wait()
     // const balance1 = await goldContract.allowance(owner.address, contractAddress)
     // console.log(balance1)
-    // const tokenPrice = await goldContract.balanceOf(contractAddress)
+    // const tokenPrice = await silverContract.balanceOf(contractAddress)
     // console.log(tokenPrice)
 
     // const balance1 = await dexContract.retrieveTokenPriceInfo(silverAddress)

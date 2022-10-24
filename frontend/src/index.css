@@ -38,3 +38,7 @@ button {
 h2 {
   margin-bottom: 0 !important;
 }
+
+img {
+  cursor: pointer;
+}

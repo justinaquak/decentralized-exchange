@@ -77,8 +77,8 @@ function TokenMarketLimit(account) {
       <div className="home-swap-token" style={{ marginBottom: '16px' }}>
         <div>
           <Select className='select' value={currency1} options={option} onChange={(value) => setCurrency1(value)}/>
-          <InputNumber value={price} onChange={(e) => setPrice(e.target.value)} style={{width: '120px'}} addonBefore="$" />
-          <InputNumber value={volume} onChange={(e) => setVolume(e.target.value)} style={{width: '120px'}} addonAfter="AMT" />
+          <InputNumber value={price} onChange={(e) => setPrice(e)} style={{width: '120px'}} addonBefore="$" />
+          <InputNumber value={volume} onChange={(e) => setVolume(e)} style={{width: '120px'}} addonAfter="AMT" />
         </div>
         <img 
           alt="swap-coins" 

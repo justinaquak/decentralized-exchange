@@ -1,26 +1,42 @@
+import React, { useEffect, useState } from 'react'
 import { Select, Card, Input } from 'antd';
-import React from 'react'
+import axios from 'axios';
 
-import LabelAndField from '../../components/LabelAndField';
-import { marketOption, option } from './const';
+import { marketOption, option, defaultAPI } from './const';
 import '../styles.css'
+import ExchangeRateLabelAndField from '../../components/ExchangeRateLabelAndField';
 
 function TokenMarketLimit() {
+  const [field, setField] = useState([]);
+  const [type, setType] = useState('buy')
+
+  useEffect(() => {
+    getMinAndMax()
+  }, [])
+
+  const getMinAndMax = () => {
+    axios.get(`${defaultAPI}get/tokenPriceInfo`)
+    .then(res => {
+      setField(res.data)
+    })
+  }
+
   return (
     <div className='home-swap-token-daddy'>
       <div className="home-swap-token" style={{ justifyContent: 'flex-start', marginBottom: '32px' }}>
         <Select
           className='select swap'
           style={{ marginRight: '8px', width: '60px' }}
-          defaultValue="Buy"
+          value={type}
           options={marketOption}
+          onChange={(value) => setType(value)}
           suffixIcon={false}
         />
         <h2>Token Limit Market</h2>
       </div>
       <div className="home-swap-token" style={{ justifyContent: 'flex-start', marginBottom: '32px' }}>
-        <Card title="Exchange Rates" style={{ width: '60%' }}>
-          <LabelAndField label={[]} field={[]} />
+        <Card title="Exchange Rates" style={{ width: '100%' }}>
+          <ExchangeRateLabelAndField field={field} />
         </Card>
       </div>
       <div className="home-swap-token" style={{ marginBottom: '16px' }}>

@@ -8,3 +8,5 @@ export const option = [
   {value: 'SILVER', label: 'SILVER'},
   {value: 'BRONZE', label: 'BRONZE'},
 ]
+
+export const defaultAPI = "http://localhost:5000/dex/"

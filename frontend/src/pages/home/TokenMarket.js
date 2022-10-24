@@ -9,7 +9,7 @@ import '../styles.css'
 export const exchangeRate = ['1 GOLD', '1 SILVER', '100 BRONZE']
 export const exchangeRateValue = ['10 SILVER', '10 BRONZE', '1 GOLD']
 
-function TokenMarket() {
+function TokenMarket(account) {
   const [currency1, setCurrency1] = useState('GOLD');
   const [currency2, setCurrency2] = useState('');
   const [error, setError] = useState(false);

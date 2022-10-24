@@ -51,6 +51,7 @@ contract Dex {
     uint256 last_giveaway;
 
     function faucet(address _gold, address _silver, address _bronze, address owner) public returns (bool success) {
+        result = false;
         // Only allow to drip every two minutes to limit abuse
         if (block.timestamp - last_giveaway < 2 minutes) {
             return false;
@@ -68,7 +69,7 @@ contract Dex {
         ERC20 bronze = ERC20(_bronze);
         bronze.approve(owner, msg.sender, 100);
         bronze.transferFrom(owner, msg.sender, 100);
-        
+        result = true;
         return true;
     }
 

@@ -61,16 +61,16 @@ function TokenMarketLimit(account) {
       <div className="home-swap-token" style={{ justifyContent: 'flex-start', marginBottom: '32px' }}>
         <Select
           className='select swap'
-          style={{ marginRight: '8px', width: '60px' }}
+          style={{ marginRight: '8px', width: '80px' }}
           value={type}
           options={marketOption}
           onChange={(value) => setType(value)}
           suffixIcon={false}
         />
-        <h2>Token Limit Market</h2>
+        <h2>Token Limit Order</h2>
       </div>
       <div className="home-swap-token" style={{ justifyContent: 'flex-start', marginBottom: '32px' }}>
-        <Card title="Exchange Rates" style={{ width: '100%' }}>
+        <Card title="Orderbook" style={{ width: '100%' }}>
           <ExchangeRateLabelAndField field={field} />
         </Card>
       </div>

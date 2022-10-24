@@ -56,7 +56,7 @@ function AccountInfo(accountInfo, setAccountInfo, account, setAccount) {
           }
         />
       </div>
-      <Space direction="vertical" size={8} style={{ width: '60%', height: '120px', overflow: 'auto' }}>
+      <Space direction="vertical" size={8} style={{ width: '60%' }}>
         <LabelAndField label={accountLabel} field={accountInfo} />
       </Space>
       <div className="home-connect-meta-wallet">

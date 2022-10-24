@@ -17,7 +17,7 @@ function ExchangeRateLabelAndField({field}) {
       </Col>
       <Col span={8}>
         <h3>Bronze:</h3>
-        <LabelAndField label={['Buy Price', 'Sell Price']} field={[field.bronze !== undefined ? field.bronze.buyPrice: '', field.bronze !== undefined ? field.bronze.buyPrice: '']} />
+        <LabelAndField label={['Buy Price', 'Sell Price']} field={[field.bronze !== undefined ? field.bronze.buyPrice: '', field.bronze !== undefined ? field.bronze.sellPrice: '']} />
       </Col>
     </Row>
   );

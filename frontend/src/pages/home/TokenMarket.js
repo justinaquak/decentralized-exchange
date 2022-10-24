@@ -71,7 +71,7 @@ function TokenMarket(account, accountInfo) {
       <div className="home-swap-token" style={{ justifyContent: 'flex-start', marginBottom: '32px' }}>
         <Select
           className='select swap'
-          style={{ marginRight: '8px', width: '60px' }}
+          style={{ marginRight: '8px', width: '80px' }}
           defaultValue="Buy"
           options={marketOption}
           suffixIcon={false}

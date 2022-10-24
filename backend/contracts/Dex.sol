@@ -42,9 +42,17 @@ contract Dex {
 
     bool result;
 
-    event BuyMarketResult(bool fulfilled, bool insufficientEth, bool insufficientOrder);
+    bool[4] public feedback;
+    
+    uint256 quantity;
 
-    event SellMarketResult(bool fulfilled, bool insufficientToken, bool insufficientOrder);
+    event BuyMarketResult(bool fulfilled, bool insufficientEth, bool insufficientOrder, bool partialOrder);
+
+    event SellMarketResult(bool fulfilled, bool insufficientToken, bool insufficientOrder, bool partialOrder);
+
+    event BuyLimitResult(bool orderStored, uint256 quantity);
+
+    event SellLimitResult(bool orderStored, uint256 quantity);
 
     event approveAndExchangeTokenResult(address _tokenA, address _tokenB, address ownerA, address ownerB, uint256 amountA, uint256 amountB);
 
@@ -73,18 +81,18 @@ contract Dex {
         return true;
     }
 
-    function buyTokenMarket(address _baseToken, address _token, uint256 _amount, uint256 baseTokenValue) public returns (bool[] memory) {
+    function buyTokenMarket(address _baseToken, address _token, uint256 _amount, uint256 baseTokenValue) public {
         Token storage loadedToken = tokenList[_token];
         uint256 remainingAmount = _amount; // order volume
         uint256 buyPrice = loadedToken.minSellPrice;
         uint256 baseTokenAmount = 0;
         uint256 offerPointer;
 
-        bool[] memory feedback = new bool[](3);
         feedback[0] = false; // fulfilled
         feedback[1] = false; // insufficient eth
         feedback[2] = false; // insufficient sell orders
-        
+        feedback[3] = false; // order partially fulfilled
+         
         while (remainingAmount > 0 && !feedback[1] && !feedback[2]) { // while sufficient eth and sell orders
             if (buyPrice == 0){
                 feedback[2] = true; // insufficient sell orders
@@ -105,6 +113,7 @@ contract Dex {
                     if (getTokenBalance(msg.sender, _baseToken) >= baseTokenAmount) { // sufficient ether
                         sacrifice(_baseToken, msg.sender, baseTokenAmount);
                         approveAndExchangeToken(_baseToken, _token, msg.sender, loadedToken.sellOrderBook[buyPrice].orders[offerPointer].owner, baseTokenAmount, volumeAtPointer);
+                        feedback[3] = true;
                         loadedToken.sellOrderBook[buyPrice].orders[offerPointer].amount = 0;
                         loadedToken.sellOrderBook[buyPrice].highestPriority = loadedToken.sellOrderBook[buyPrice].orders[offerPointer].lowerPriority; // Reassign LL pointer
 
@@ -117,6 +126,7 @@ contract Dex {
                     if (getTokenBalance(msg.sender, _baseToken) >= baseTokenAmount) { // sufficient ether
                         sacrifice(_baseToken, msg.sender, baseTokenAmount);
                         approveAndExchangeToken(_baseToken, _token, msg.sender, loadedToken.sellOrderBook[buyPrice].orders[offerPointer].owner, baseTokenAmount, remainingAmount);
+                        feedback[3] = true;
                         // remove the volume bought from the offer
                         loadedToken.sellOrderBook[buyPrice].orders[offerPointer].amount -= remainingAmount;
                         remainingAmount = 0;
@@ -145,21 +155,20 @@ contract Dex {
         if (remainingAmount == 0) {
             feedback[0] = true; // order fulfilled
         }
-        emit BuyMarketResult(feedback[0], feedback[1], feedback[2]);
-        return feedback;
+        emit BuyMarketResult(feedback[0], feedback[1], feedback[2], feedback[3]);
     }
 
-    function sellTokenMarket(address _baseToken, address _token, uint256 _amount, uint256 baseTokenValue) public returns (bool[] memory) {
+    function sellTokenMarket(address _baseToken, address _token, uint256 _amount, uint256 baseTokenValue) public {
         Token storage loadedToken = tokenList[_token];
         uint256 remainingAmount = _amount; // order volume
         uint256 sellPrice = loadedToken.maxBuyPrice;
         uint256 baseTokenAmount = 0;
         uint256 offerPointer;
 
-        bool[] memory feedback = new bool[](3);
         feedback[0] = false; // fulfilled
         feedback[1] = false; // insufficient eth
         feedback[2] = false; // insufficient buy orders
+        feedback[3] = false; // order partially fulfilled
 
         while (remainingAmount > 0 && !feedback[1] && !feedback[2]) { // while sufficient eth and buy orders
             if (sellPrice == 0){
@@ -178,6 +187,7 @@ contract Dex {
                         baseTokenAmount = (volumeAtPointer * sellPrice) / (baseTokenValue);
                         sacrifice(_token, msg.sender, volumeAtPointer);
                         approveAndExchangeToken(_baseToken, _token, loadedToken.buyOrderBook[sellPrice].orders[offerPointer].owner, msg.sender, baseTokenAmount, volumeAtPointer);
+                        feedback[3] = true;
                         
                         loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount = 0;
                         loadedToken.buyOrderBook[sellPrice].highestPriority = loadedToken.buyOrderBook[sellPrice].orders[offerPointer].lowerPriority;
@@ -191,6 +201,7 @@ contract Dex {
                         baseTokenAmount = (remainingAmount * sellPrice) / (baseTokenValue);
                         sacrifice(_token, msg.sender, remainingAmount);
                         approveAndExchangeToken(_baseToken, _token, loadedToken.buyOrderBook[sellPrice].orders[offerPointer].owner, msg.sender, baseTokenAmount, remainingAmount);
+                        feedback[3] = true;
                         
                         loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount = loadedToken.buyOrderBook[sellPrice].orders[offerPointer].amount - remainingAmount;
                         remainingAmount = 0;
@@ -218,8 +229,7 @@ contract Dex {
         if (remainingAmount == 0) {
             feedback[0] = true; // order fulfilled
         }
-        emit SellMarketResult(feedback[0], feedback[1], feedback[2]);
-        return feedback;
+        emit SellMarketResult(feedback[0], feedback[1], feedback[2], feedback[3]);
     }
 
     function buyTokenLimit(address _baseToken, address _token, uint256 _price, uint256 _amount, uint256 baseTokenValue) public {
@@ -231,6 +241,9 @@ contract Dex {
         if (loadedToken.numOfSellPrices == 0 || loadedToken.minSellPrice > _price) { // no available/suitable sell order prices
             sacrifice(_baseToken, msg.sender, _price*_amount/baseTokenValue);
             storeBuyOrder(_baseToken, _token, _price, _amount, msg.sender);
+
+            result = true;
+            quantity = _amount;
         } else {
             uint256 baseTokenAmount = 0;
             uint256 remainingAmount = _amount;
@@ -238,6 +251,7 @@ contract Dex {
             uint256 offerPointer;
             uint256 volumeAtPointer;
             uint256 currBuyPriceHigherPrice;
+
 
             while (buyPrice != 0 && buyPrice <= _price && remainingAmount > 0) {
                 // lowest selling price is lower than this current buy price, and still has volume to fill
@@ -289,6 +303,8 @@ contract Dex {
             if (remainingAmount > 0) {
                 buyTokenLimit(_baseToken, _token, _price, remainingAmount, baseTokenValue);
             }
+            result = false;
+            quantity = remainingAmount;
         }
     }
 
@@ -300,6 +316,8 @@ contract Dex {
         if (loadedToken.numOfBuyPrices == 0 || loadedToken.maxBuyPrice < _price) { // no avail or suitable buy orders
             sacrifice(_token, msg.sender, _amount);
             storeSellOrder(_token, _price, _amount, msg.sender);
+            result = true;
+            quantity = _amount;
         } else {
             uint256 sellPrice = loadedToken.maxBuyPrice;
             uint256 remainingAmount = _amount;
@@ -356,6 +374,8 @@ contract Dex {
             if (remainingAmount > 0){
                 sellTokenLimit(_baseToken, _token, _price, remainingAmount, baseTokenValue);
             }
+            result = false;
+            quantity = remainingAmount;
         }
     } 
 
@@ -999,8 +1019,20 @@ contract Dex {
         tokenA.transferFrom(address(this), owner, amountA);
     }
 
+    function resetResult() public {
+        result = false;
+    }
+
     function getResult() external view returns (bool){
         return result;
+    }
+
+    function getQuantity() external view returns (uint256){
+        return quantity;
+    }
+
+    function getFeedback() public view returns (bool [4] memory){
+        return feedback;
     }
 
     function approveAndExchangeToken(address _tokenA, address _tokenB, address ownerA, address ownerB, uint256 amountA, uint256 amountB) public {

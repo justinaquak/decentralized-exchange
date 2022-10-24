@@ -77,7 +77,7 @@ async function faucet(req, res) {
     if (result) {
       return [true, "Faucet request successful."]
     } else {
-       return [false, "Faucet request failed, please request only after 2 minutes."]
+       throw new Error("Faucet request failed, please request only after 2 minutes.")
     }
   }
 

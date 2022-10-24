@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Button, Select, Space, message } from 'antd';
 import axios from 'axios';
 
@@ -13,9 +13,7 @@ const accountOption = [
 
 const accountLabel = ['Address:', 'Gold Balance:', 'Silver Balance:', 'Bronze Balance:']
 
-function AccountInfo(accountInfo, setAccountInfo) {
-  const [account, setAccount] = useState('')
-
+function AccountInfo(accountInfo, setAccountInfo, account, setAccount) {
   const getUserInfo = (value) => {
     axios.get(`http://localhost:5000/dex/get/userBalance?user=${value}`)
       .then(res => {
@@ -26,7 +24,8 @@ function AccountInfo(accountInfo, setAccountInfo) {
           parseInt(res.data.bronze).toLocaleString()
         ]
         setAccountInfo(temp)
-      });
+      })
+      .catch(err => message.error(err))
   }
 
   const requestFaucet = (user) => {
@@ -67,4 +66,4 @@ function AccountInfo(accountInfo, setAccountInfo) {
   );
 }
 
-export {AccountInfo};
+export { AccountInfo };

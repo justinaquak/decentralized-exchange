@@ -5,11 +5,20 @@
   min-width: 320px;
 }
 
+.home-connect-meta-wallet-daddy {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .home-connect-meta-wallet {
   display: flex;
   justify-content: flex-start;
   align-items: center;
   flex-direction: row;
+  width: 60%
 }
 
 .home-content-daddy {
@@ -23,9 +32,20 @@
   gap: 64px;
 }
 
+.home-swap-token-daddy {
+  display: flex;
+  flex-direction: column;
+}
+
 .home-swap-token {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-direction: row;
+}
+
+.swap .ant-select-selector .ant-select-selection-item {
+  font-weight: 600;
+  font-size: 1.5em;
+  padding-right: 0;
 }

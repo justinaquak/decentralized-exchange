@@ -39,7 +39,7 @@ function parseMarketReceipt(feedback) {
   return result
 }
 
-function parseLimitReceipt(storedOrder, tokenB, tokenBAmount, quantity) {
+function parseLimitReceipt(storedOrder, tokenB = null, tokenBAmount = null, quantity = null) {
   let result = {}
   if (storedOrder) {
     if (tokenBAmount != quantity) {
@@ -120,12 +120,30 @@ async function buyTokenLimit(req, res) {
     let tokenAValue = getValue(tokenA)
     let user = await getUser(req.query.user)
     let result = await dexContract.resetResult();
+    let quantity = await dexContract.resetQuantity();
+    let feedback
     const buyOrder = await dexContract.connect(user).buyTokenLimit(tokenAAdd, tokenBAdd, tokenBPrice, tokenBAmount, tokenAValue)
     await buyOrder.wait()
     result = await dexContract.getResult();
-    let quantity = await dexContract.getQuantity();
-    let feedback = parseLimitReceipt(result, tokenB, tokenBAmount, quantity)
-    return feedback
+    quantity = (await dexContract.getQuantity()).toString();
+    if (!result) {
+      feedback = parseLimitReceipt(result, tokenB, tokenBAmount, quantity)
+      return feedback
+    } else {
+      const batchExecution = await dexContract.batchExecutionBuy(goldAddress, silverAddress, bronzeAddress)
+      await batchExecution.wait()
+      const numOfSets = (await dexContract.getQuantity()).toString()
+      const numFulfilled = parseInt(numOfSets)*getValue(tokenB)
+      const numTokenBRequired= quantity * tokenBPrice/tokenAValue
+      
+      const remaining = numTokenBRequired - numFulfilled
+      if (remaining == 0) {
+        feedback = parseLimitReceipt(false)
+      } else {
+        feedback = parseLimitReceipt(true, tokenB, tokenBAmount, quantity)
+      }
+      return feedback
+    }
   }
 
   try {
@@ -149,12 +167,28 @@ async function sellTokenLimit(req, res) {
     let tokenAValue = getValue(tokenA)
     let user = await getUser(req.query.user)
     let result = await dexContract.resetResult();
+    let quantity = await dexContract.resetQuantity();
+    let feedback
     const buyOrder = await dexContract.connect(user).sellTokenLimit(tokenAAdd, tokenBAdd, tokenBPrice, tokenBAmount, tokenAValue)
     await buyOrder.wait()
     result = await dexContract.getResult();
-    let quantity = await dexContract.getQuantity();
-    let feedback = parseLimitReceipt(result, tokenB, tokenBAmount, quantity)
-    return feedback
+    quantity = await dexContract.getQuantity();
+    if (result) {
+      feedback = parseLimitReceipt(result, tokenB, tokenBAmount, quantity)
+      return feedback
+    } else {
+      const batchExecution = await dexContract.batchExecutionSell(goldAddress, silverAddress, bronzeAddress)
+      await batchExecution.wait()
+      const numOfSets = await dexContract.getQuantity()
+      const numFulfilled = numOfSets*getValue(tokenB)
+      const remaining = quantity - numFulfilled
+      if (remaining == 0) {
+        feedback = parseLimitReceipt(false)
+      } else {
+        feedback = parseLimitReceipt(true, tokenB, tokenBAmount, remaining)
+      }
+      return feedback
+    }
   }
 
   try {

@@ -35,7 +35,6 @@ async function getUserAddress(user) {
 ]
 */
 function parseOrders(array) {
-  console.log(array[0].toString())
   if (array[0].length == 0) return []
   const pricesArr = array[0]
   const volumeArr = array[1]
@@ -188,7 +187,6 @@ async function getUserBalance(req, res) {
     const goldBalance = await goldContract.balanceOf(userAddress)
     const silverBalance = await silverContract.balanceOf(userAddress)
     const bronzeBalance = await bronzeContract.balanceOf(userAddress)
-    console.log(goldBalance)
 
     return [userAddress, parseBalance(goldBalance), parseBalance(silverBalance), parseBalance(bronzeBalance)]
   }

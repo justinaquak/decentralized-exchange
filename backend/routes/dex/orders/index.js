@@ -172,23 +172,9 @@ async function sellTokenLimit(req, res) {
     const buyOrder = await dexContract.connect(user).sellTokenLimit(tokenAAdd, tokenBAdd, tokenBPrice, tokenBAmount, tokenAValue)
     await buyOrder.wait()
     result = await dexContract.getResult();
-    quantity = await dexContract.getQuantity();
-    if (result) {
-      feedback = parseLimitReceipt(result, tokenB, tokenBAmount, quantity)
-      return feedback
-    } else {
-      const batchExecution = await dexContract.batchExecutionSell(goldAddress, silverAddress, bronzeAddress)
-      await batchExecution.wait()
-      const numOfSets = await dexContract.getQuantity()
-      const numFulfilled = numOfSets*getValue(tokenB)
-      const remaining = quantity - numFulfilled
-      if (remaining == 0) {
-        feedback = parseLimitReceipt(false)
-      } else {
-        feedback = parseLimitReceipt(true, tokenB, tokenBAmount, remaining)
-      }
-      return feedback
-    }
+    quantity = await dexContract.getQuantity()
+    feedback = parseLimitReceipt(result, tokenB, tokenBAmount, quantity)
+    return feedback
   }
 
   try {

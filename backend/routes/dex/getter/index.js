@@ -35,11 +35,12 @@ async function getUserAddress(user) {
 ]
 */
 function parseOrders(array) {
+  console.log(array[0].toString())
   if (array[0].length == 0) return []
   const pricesArr = array[0]
   const volumeArr = array[1]
   let newArr = []
-  for (let i = 0; i < array.length; i++) {
+  for (let i = 0; i < pricesArr.length; i++) {
     let data = {}
     if (pricesArr[i].toString() != "0") {
       data.price = pricesArr[i].toString()

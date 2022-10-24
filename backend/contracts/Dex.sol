@@ -654,11 +654,13 @@ contract Dex {
         address sacrificedToken;
         uint256 amount;
         result = false;
+        quantity = 0;
         // might have key not found error if price does not exist in orderbook
         if (loadedToken.buyOrderBook[_price].numOfOrders == 1) {
             if (loadedToken.buyOrderBook[_price].orders[1].owner == owner){
                 saveTheTribute(loadedToken.buyOrderBook[_price].orders[1].sacrificedToken, owner, loadedToken.buyOrderBook[_price].orders[1].amount*_price/baseTokenValue);
                 result = true;
+                quantity = loadedToken.buyOrderBook[_price].orders[1].amount;
                 if (loadedToken.numOfBuyPrices == 1) {
                     clearOrderBook(_token, _price, false);
                     loadedToken.buyOrderBook[_price].orders[1].amount = 0; 
@@ -706,6 +708,7 @@ contract Dex {
             }
             if (result) {
                 saveTheTribute(sacrificedToken, owner, amount*_price/baseTokenValue);
+                quantity = amount;
                 delete loadedToken.buyOrderBook[_price].orders[loadedToken.buyOrderBook[_price].numOfOrders]; // delete last order
                 loadedToken.buyOrderBook[_price].numOfOrders -= 1;
                 loadedToken.buyOrderBook[_price].lowestPriority -= 1;
@@ -721,11 +724,13 @@ contract Dex {
         address sacrificedToken;
         uint256 amount;
         result = false;
+        quantity = 0;
         // might have key not found error if price does not exist in orderbook
         if (loadedToken.sellOrderBook[_price].numOfOrders == 1) {
             if (loadedToken.sellOrderBook[_price].orders[1].owner == owner){
                 saveTheTribute(loadedToken.sellOrderBook[_price].orders[1].sacrificedToken, owner, loadedToken.sellOrderBook[_price].orders[1].amount);
                 result = true;
+                quantity = loadedToken.sellOrderBook[_price].orders[1].amount;
                 if (loadedToken.numOfBuyPrices == 1) {
                     clearOrderBook(_token, _price, false);
                     loadedToken.sellOrderBook[_price].orders[1].amount = 0; 
@@ -773,6 +778,7 @@ contract Dex {
             }
             if (result) {
                 saveTheTribute(sacrificedToken, owner, amount);
+                quantity = amount;
                 delete loadedToken.sellOrderBook[_price].orders[loadedToken.sellOrderBook[_price].numOfOrders]; // delete last order
                 loadedToken.sellOrderBook[_price].numOfOrders -= 1;
                 loadedToken.sellOrderBook[_price].lowestPriority -= 1;

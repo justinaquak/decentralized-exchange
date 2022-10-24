@@ -62,10 +62,10 @@ async function getByUserBuySellOrder(req, res) {
 }
 
 async function getter(fastify, options) {
-  fastify.post('/orders', async (request, reply) => {
+  fastify.get('/orders', async (request, reply) => {
     await getByBuySellOrder(request, reply)
   })
-  fastify.post('/userOrders', async (request, reply) => {
+  fastify.get('/userOrders', async (request, reply) => {
     await getByUserBuySellOrder(request, reply)
   })
 }

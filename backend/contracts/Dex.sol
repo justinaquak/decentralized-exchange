@@ -48,6 +48,30 @@ contract Dex {
 
     event approveAndExchangeTokenResult(address _tokenA, address _tokenB, address ownerA, address ownerB, uint256 amountA, uint256 amountB);
 
+    uint256 last_giveaway;
+
+    function faucet(address _gold, address _silver, address _bronze, address owner) public returns (bool success) {
+        // Only allow to drip every two minutes to limit abuse
+        if (block.timestamp - last_giveaway < 2 minutes) {
+            return false;
+        }
+        last_giveaway = block.timestamp;
+        // It is a faucet mint new tokens
+        ERC20 gold = ERC20(_gold);
+        gold.approve(owner, msg.sender, 1);
+        gold.transferFrom(owner, msg.sender, 1);
+
+        ERC20 silver = ERC20(_silver);
+        silver.approve(owner, msg.sender, 10);
+        silver.transferFrom(owner, msg.sender, 10);
+
+        ERC20 bronze = ERC20(_bronze);
+        bronze.approve(owner, msg.sender, 100);
+        bronze.transferFrom(owner, msg.sender, 100);
+        
+        return true;
+    }
+
     function buyTokenMarket(address _baseToken, address _token, uint256 _amount, uint256 baseTokenValue) public returns (bool[] memory) {
         Token storage loadedToken = tokenList[_token];
         uint256 remainingAmount = _amount; // order volume

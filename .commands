@@ -212,3 +212,6 @@
 
 // const batchExecution = await dexContract.batchExecutionBuy(goldAddress, silverAddress, bronzeAddress);
 // await batchExecution.wait()
+
+// const faucet = await dexContract.connect(third).faucet(goldAddress, silverAddress, bronzeAddress, owner.address);
+// await faucet.wait()

@@ -2,66 +2,81 @@ const hre = require('hardhat')
 const {contractAddress, goldAddress, silverAddress, bronzeAddress} = require('../constants.js')
 const AMOUNT = 10000
 
+const tokenNames = ["GOLD", "SILVER", "BRONZE"]
+const tokenAddresses = [goldAddress, silverAddress, bronzeAddress]
+
+async function getUser(user) {
+  const [owner, actor, third] = await hre.ethers.getSigners()
+  if (user == "owner") {
+    return owner
+  } else if (user == "actor") {
+    return actor
+  } else if (user == "third") {
+    return third
+  }
+}
+
+async function getUserAddress(user) {
+  const [owner, actor, third] = await hre.ethers.getSigners()
+  if (user == "owner") {
+    return owner.address
+  } else if (user == "actor") {
+    return actor.address
+  } else if (user == "third") {
+    return third.address
+  }
+}
+
 async function addressTransferLogic(req, res) {
-    const [owner, actor, third] = await hre.ethers.getSigners()
-  
-    const transferGold = async () => {
-      const goldContract = await hre.ethers.getContractAt('GOLD', goldAddress)
-  
-      const transfer = await goldContract.transfer(actor.address, AMOUNT)
+  const userAddress = getUserAddress(req.query.user)
+
+  let contract
+  let transfer
+  const transferToken = async () => {
+    for (let i = 0; i < tokenNames.length, i++;) {
+      contract = await hre.etheres.getContractAt(tokenNames[i], tokenAddresses[i])
+      transfer = await contract.transfer(userAddress, AMOUNT)
       await transfer.wait()
-    }
-  
-    const transferSilver = async () => {
-      const silverContract = await hre.ethers.getContractAt('SILVER', silverAddress)
-  
-      const transfer = await silverContract.transfer(actor.address, AMOUNT)
-      await transfer.wait()
-    }
-  
-    const transferBronze = async () => {
-      const bronzeContract = await hre.ethers.getContractAt('BRONZE', bronzeAddress)
-  
-      const transfer = await bronzeContract.transfer(actor.address, AMOUNT)
-      await transfer.wait()
-    }
-  
-    try {
-      await transferGold();
-      await transferSilver();
-      await transferBronze();
-      res.code(200).header('Content-Type', 'application/json; charset=utf-8')
-    } catch (err) {
-      res.code(400).send(err)
     }
   }
+
+  try {
+    await transferToken();
+    res.code(200).header('Content-Type', 'application/json; charset=utf-8')
+  } catch (err) {
+    res.code(400).send(err)
+  }
+}
 
 async function contractTransferLogic(req, res) {
-  const transferGold = async () => {
-    const goldContract = await hre.ethers.getContractAt('GOLD', goldAddress)
-
-    const transfer = await goldContract.transfer(contractAddress, AMOUNT)
-    await transfer.wait()
+  let contract
+  let transfer
+  const transferToken = async () => {
+    for (let i = 0; i < tokenNames.length, i++;) {
+      contract = await hre.etheres.getContractAt(tokenNames[i], tokenAddresses[i])
+      transfer = await contract.transfer(contractAddress, AMOUNT)
+      await transfer.wait()
+    }
   }
 
-  const transferSilver = async () => {
-    const silverContract = await hre.ethers.getContractAt('SILVER', silverAddress)
-
-    const transfer = await silverContract.transfer(contractAddress, AMOUNT)
-    await transfer.wait()
+  try {
+    await transferToken();
+    res.code(200).header('Content-Type', 'application/json; charset=utf-8')
+  } catch (err) {
+    res.code(400).send(err)
   }
+}
 
-  const transferBronze = async () => {
-    const bronzeContract = await hre.ethers.getContractAt('BRONZE', bronzeAddress)
-
-    const transfer = await bronzeContract.transfer(contractAddress, AMOUNT)
+async function faucet(req, res) {
+  const faucetRequest = async () => {
+    let user = await getUser(req.query.user)
+    const contract = await hre.ethers.getContractAt('Dex', contractAddress)
+    const transfer = await contract.connect(user).faucet(goldAddress, silverAddress, bronzeAddress, await getUserAddress("owner"))
     await transfer.wait()
   }
 
   try {
-    await transferGold();
-    await transferSilver();
-    await transferBronze();
+    await faucetRequest();
     res.code(200).header('Content-Type', 'application/json; charset=utf-8')
   } catch (err) {
     res.code(400).send(err)
@@ -74,6 +89,9 @@ async function transfer(fastify, options) {
     })
     fastify.post('/address', async (request, reply) => {
       await addressTransferLogic(request, reply)
+    })
+    fastify.post('/faucet', async (request, reply) => {
+      await faucet(request, reply)
     })
   }
   

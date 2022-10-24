@@ -56,6 +56,28 @@ function parseBalance(value) {
   return value
 }
 
+/* [
+  BigNumber { value: "0" },
+  BigNumber { value: "0" },
+  BigNumber { value: "0" },
+  BigNumber { value: "100" },
+  BigNumber { value: "100" },
+  BigNumber { value: "1" }
+] */
+
+function parsePriceInfo(array){
+  let buyPrice = array[0].toString()
+  let sellPrice = array[4].toString()
+  if (buyPrice == "0") {
+    buyPrice = "No sell orders available"
+  }
+  if (sellPrice == "0") {
+    sellPrice = "No buy orders available"
+  }
+
+  return [buyPrice, sellPrice]
+}
+
 async function getOrderBooks(req, res) {
   const preResponse = async () => {
     const dexContract = await hre.ethers.getContractAt('Dex', contractAddress)
@@ -76,6 +98,40 @@ async function getOrderBooks(req, res) {
     silver.sellOrders = parseOrders(silverSellOrders)
     bronze.buyOrders = parseOrders(bronzeBuyOrders)
     bronze.sellOrders = parseOrders(bronzeSellOrders)
+
+    return [gold, silver, bronze]
+  }
+
+  try {
+    const data = await preResponse()
+    res.code(200).header('Content-Type', 'application/json; charset=utf-8').send({gold: data[0], silver: data[1], bronze: data[2]})
+  } catch (err) {
+    res.code(400).send(err)
+  }
+}
+
+async function getTokenPriceInfo(req, res) {
+  const preResponse = async () => {
+    const dexContract = await hre.ethers.getContractAt('Dex', contractAddress)
+
+    let goldPriceInfo = await dexContract.retrieveTokenPriceInfo(goldAddress)
+    let silverPriceInfo = await dexContract.retrieveTokenPriceInfo(silverAddress)
+    let bronzePriceInfo = await dexContract.retrieveTokenPriceInfo(bronzeAddress)
+    
+    goldPriceInfo = parsePriceInfo(goldPriceInfo)
+    silverPriceInfo = parsePriceInfo(silverPriceInfo)
+    bronzePriceInfo = parsePriceInfo(bronzePriceInfo)
+    
+    let gold = {}
+    let silver = {}
+    let bronze = {}
+    
+    gold.buyPrice = goldPriceInfo[0]
+    gold.sellPrice = goldPriceInfo[1]
+    silver.buyPrice = silverPriceInfo[0]
+    silver.sellPrice = silverPriceInfo[1]
+    bronze.buyPrice = bronzePriceInfo[0]
+    bronze.sellPrice = bronzePriceInfo[1]
 
     return [gold, silver, bronze]
   }
@@ -133,12 +189,12 @@ async function getUserBalance(req, res) {
     const bronzeBalance = await bronzeContract.balanceOf(userAddress)
     console.log(goldBalance)
 
-    return [parseBalance(goldBalance), parseBalance(silverBalance), parseBalance(bronzeBalance)]
+    return [userAddress, parseBalance(goldBalance), parseBalance(silverBalance), parseBalance(bronzeBalance)]
   }
 
   try {
     const data = await preResponse()
-    res.code(200).header('Content-Type', 'application/json; charset=utf-8').send({gold: data[0], silver: data[1], bronze: data[2]})
+    res.code(200).header('Content-Type', 'application/json; charset=utf-8').send({address: data[0], gold: data[1], silver: data[2], bronze: data[3]})
   } catch (err) {
     res.code(400).send(err)
   }
@@ -153,6 +209,9 @@ async function getter(fastify, options) {
   })
   fastify.get('/userBalance', async (request, reply) => {
     await getUserBalance(request, reply)
+  })
+  fastify.get('/tokenPriceInfo', async (request, reply) => {
+    await getTokenPriceInfo(request, reply)
   })
 }
 

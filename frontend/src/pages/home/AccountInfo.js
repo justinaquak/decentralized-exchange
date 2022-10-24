@@ -3,6 +3,7 @@ import { Button, Select, Space, message } from 'antd';
 import axios from 'axios';
 
 import LabelAndField from '../../components/LabelAndField';
+import { defaultAPI } from './const';
 import '../styles.css'
 
 const accountOption = [
@@ -15,7 +16,7 @@ const accountLabel = ['Address:', 'Gold Balance:', 'Silver Balance:', 'Bronze Ba
 
 function AccountInfo(accountInfo, setAccountInfo, account, setAccount) {
   const getUserInfo = (value) => {
-    axios.get(`http://localhost:5000/dex/get/userBalance?user=${value}`)
+    axios.get(`${defaultAPI}get/userBalance?user=${value}`)
       .then(res => {
         const temp = [
           res.data.address,
@@ -30,12 +31,12 @@ function AccountInfo(accountInfo, setAccountInfo, account, setAccount) {
 
   const requestFaucet = (user) => {
     if (user !== 'owner') {
-      axios.post(`http://localhost:5000/dex/transfer/faucet?user=${user}`)
+      axios.post(`${defaultAPI}transfer/faucet?user=${user}`)
         .then(() => {
           message.success('Request token is successful')
           window.location.reload()
         })
-        .catch(err => message.error(err))
+        .catch(err => message.error(err.response.data.message))
     } else {
       message.error('Owner account is the dispenser for faucet!')
     }

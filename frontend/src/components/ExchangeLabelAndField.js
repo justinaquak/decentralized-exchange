@@ -10,7 +10,7 @@ const silverField = ['-> 10 Bronze', '-> 1 Gold']
 const bronzeLabel = ['10 Bronze', '100 Bronze']
 const bronzeField = ['-> 1 Silver', '-> 1 Gold']
 
-function ExchangeLabelAndField({label, field}) {
+function ExchangeLabelAndField() {
   return (
     <Row>
       <Col span={8}>

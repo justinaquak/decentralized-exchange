@@ -3,13 +3,13 @@ import { Card, Select, Space, message, InputNumber, Input } from 'antd';
 import axios from 'axios';
 
 import ExchangeLabelAndField from '../../components/ExchangeLabelAndField';
-import { marketOption, option } from './const';
+import { defaultAPI, marketOption, option } from './const';
 import '../styles.css'
 
 export const exchangeRate = ['1 GOLD', '1 SILVER', '100 BRONZE']
 export const exchangeRateValue = ['10 SILVER', '10 BRONZE', '1 GOLD']
 
-function TokenMarket(account) {
+function TokenMarket(account, accountInfo) {
   const [currency1, setCurrency1] = useState('GOLD');
   const [currency2, setCurrency2] = useState('');
   const [error, setError] = useState(false);
@@ -36,9 +36,35 @@ function TokenMarket(account) {
     }
   }
 
-  const buyTokenMarket = () => {}
+  const buyTokenMarket = (tokenA, tokenB, amount, user) => {
+    axios.post(`${defaultAPI}orders/buyTokenMarket?tokenA=${tokenA}&tokenB=${tokenB}&tokenBAmount=${amount}&user=${user}`)
+    .then(res => {
+      if (res.data.result === 'Failed') {
+        message.error(res.data.message)
+        return
+      }
+      message.success(res.data.message)
+      setTimeout(function(){ window.location.reload() }, 3000);
+    })
+    .catch(() => {
+      message.error('Transaction was not successful')
+    })
+  }
 
-  const sellTokenMarket = () => {}
+  const sellTokenMarket = (tokenA, tokenB, amount, user) => {
+    axios.post(`${defaultAPI}orders/sellTokenMarket?tokenA=${tokenA}&tokenB=${tokenB}&tokenBAmount=${amount}&user=${user}`)
+    .then(res => {
+      if (res.data.result === 'Failed') {
+        message.error(res.data.message)
+        return
+      }
+      message.success(res.data.message)
+      setTimeout(function(){ window.location.reload() }, 3000);
+    })
+    .catch(() => {
+      message.error('Transaction was not successful')
+    })
+  }
 
   return (
     <div className='home-swap-token-daddy'>
@@ -95,8 +121,8 @@ function TokenMarket(account) {
           src="./swap.png" 
           style={{ height: '64px' }} 
           onClick={() => {
-            if (type === 'buy') console.log('here')
-            if (type === 'sell') console.log('here')
+            if (type === 'buy') { buyTokenMarket(currency2, currency1, volume, account) }
+            if (type === 'sell') { sellTokenMarket(currency2, currency1, volume, account) }
           }}
         />
         <div>

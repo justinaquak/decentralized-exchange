@@ -73,11 +73,17 @@ async function faucet(req, res) {
     const contract = await hre.ethers.getContractAt('Dex', contractAddress)
     const transfer = await contract.connect(user).faucet(goldAddress, silverAddress, bronzeAddress, await getUserAddress("owner"))
     await transfer.wait()
+    const result = await contract.getResult();
+    if (result) {
+      return [true, "Faucet request successful."]
+    } else {
+       throw new Error("Faucet request failed, please request only after 2 minutes.")
+    }
   }
 
   try {
-    await faucetRequest();
-    res.code(200).header('Content-Type', 'application/json; charset=utf-8')
+    const result = await faucetRequest();
+    res.code(200).header('Content-Type', 'application/json; charset=utf-8').send({result: result[0], message: result[1]})
   } catch (err) {
     res.code(400).send(err)
   }

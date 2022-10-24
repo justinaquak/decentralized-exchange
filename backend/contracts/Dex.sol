@@ -56,15 +56,15 @@ contract Dex {
 
     event approveAndExchangeTokenResult(address _tokenA, address _tokenB, address ownerA, address ownerB, uint256 amountA, uint256 amountB);
 
-    uint256 last_giveaway;
+    mapping(address => uint256) last_giveaway;
 
     function faucet(address _gold, address _silver, address _bronze, address owner) public returns (bool success) {
         result = false;
         // Only allow to drip every two minutes to limit abuse
-        if (block.timestamp - last_giveaway < 2 minutes) {
+        if (block.timestamp - last_giveaway[msg.sender] < 2 minutes) {
             return false;
         }
-        last_giveaway = block.timestamp;
+        last_giveaway[msg.sender] = block.timestamp;
         // It is a faucet mint new tokens
         ERC20 gold = ERC20(_gold);
         gold.approve(owner, msg.sender, 1);
@@ -492,6 +492,7 @@ contract Dex {
         uint256 bronzeAmt = 0;
         uint256 offerPointer;
         uint256 numOfSets;
+        quantity = 0;
         if (tokenList[_gold].numOfBuyPrices >= 1 && tokenList[_silver].numOfBuyPrices >= 1 && tokenList[_bronze].numOfBuyPrices >= 1) {
             // gold -> silver -> bronze
             offerPointer = tokenList[_gold].buyOrderBook[100].highestPriority; 
@@ -524,6 +525,7 @@ contract Dex {
                 iterateThroughBuyOrders(_gold, 100, goldAmt);
                 iterateThroughBuyOrders(_silver, 10, silverAmt);
                 iterateThroughBuyOrders(_bronze, 1, bronzeAmt);
+                quantity = numOfSets;
             }
         }
     }
@@ -570,6 +572,7 @@ contract Dex {
         uint256 bronzeAmt = 0;
         uint256 offerPointer;
         uint256 numOfSets;
+        quantity = 0;
         if (tokenList[_gold].numOfSellPrices >= 1 && tokenList[_silver].numOfSellPrices >= 1 && tokenList[_bronze].numOfSellPrices >= 1) {
             // gold -> silver -> bronze
             offerPointer = tokenList[_gold].sellOrderBook[100].highestPriority; 
@@ -602,6 +605,7 @@ contract Dex {
                 iterateThroughSellOrders(_gold, 100, goldAmt);
                 iterateThroughSellOrders(_silver, 10, silverAmt);
                 iterateThroughSellOrders(_bronze, 1, bronzeAmt);
+                quantity = numOfSets;
             }
         }
     }
@@ -1021,6 +1025,10 @@ contract Dex {
 
     function resetResult() public {
         result = false;
+    }
+
+    function resetQuantity() public {
+        quantity = 0;
     }
 
     function getResult() external view returns (bool){

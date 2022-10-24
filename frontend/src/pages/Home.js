@@ -18,9 +18,9 @@ function Home() {
       <NavBar />
       <div className="home-content-daddy">
         <CustomCard content={AccountInfo(accountInfo, setAccountInfo, account, setAccount)} />
-        <CustomCard content={TokenMarket(account, accountInfo)} />
-        <CustomCard content={TokenMarketLimit(account, accountInfo)} />
         <CustomCard content={UserOrder(account)} />
+        <CustomCard content={TokenMarketLimit(account, accountInfo)} />
+        <CustomCard content={TokenMarket(account, accountInfo)} />
       </div>
     </div>
   );

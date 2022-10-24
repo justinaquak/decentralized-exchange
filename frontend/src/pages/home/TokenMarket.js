@@ -102,7 +102,8 @@ function TokenMarket(account, accountInfo) {
               }
             }}
           />
-          <InputNumber
+          <InputNumber 
+            min={0} 
             addonBefore={
               type === 'buy' ? "Buying": 
               type === 'sell' ? "Selling": ""

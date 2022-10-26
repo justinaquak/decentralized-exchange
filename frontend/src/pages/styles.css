@@ -44,8 +44,12 @@
   flex-direction: row;
 }
 
+.swap {
+  margin-bottom: 0.5em;
+}
+
 .swap .ant-select-selector .ant-select-selection-item {
   font-weight: 600;
-  font-size: 1.5em;
+  font-size: 1.17em;
   padding-right: 0;
 }

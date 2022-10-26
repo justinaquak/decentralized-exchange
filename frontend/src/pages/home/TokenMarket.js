@@ -1,15 +1,15 @@
 import React, { useState } from 'react'
-import { Card, Select, Space, message, InputNumber, Input } from 'antd';
+import { Select, message, InputNumber, Input } from 'antd';
 import axios from 'axios';
 
-import ExchangeLabelAndField from '../../components/ExchangeLabelAndField';
 import { defaultAPI, marketOption, option } from './const';
+import { PushHelper } from './UserOrder';
 import '../styles.css'
 
 export const exchangeRate = ['1 GOLD', '1 SILVER', '100 BRONZE']
 export const exchangeRateValue = ['10 SILVER', '10 BRONZE', '1 GOLD']
 
-function TokenMarket(account, accountInfo) {
+function TokenMarket({account, setAccountInfo, setData}) {
   const [currency1, setCurrency1] = useState('GOLD');
   const [currency2, setCurrency2] = useState('');
   const [error, setError] = useState(false);
@@ -41,10 +41,11 @@ function TokenMarket(account, accountInfo) {
     .then(res => {
       if (res.data.result === 'Failed') {
         message.error(res.data.message)
-        return
+      } else {
+        message.success(res.data.message)
       }
-      message.success(res.data.message)
-      setTimeout(function(){ window.location.reload() }, 3000);
+      getUserInfo(account)
+      getUserOrders()
     })
     .catch(() => {
       message.error('Transaction was not successful')
@@ -56,33 +57,77 @@ function TokenMarket(account, accountInfo) {
     .then(res => {
       if (res.data.result === 'Failed') {
         message.error(res.data.message)
-        return
+      } else {
+        message.success(res.data.message)
       }
-      message.success(res.data.message)
-      setTimeout(function(){ window.location.reload() }, 3000);
+      getUserInfo(account)
+      getUserOrders()
     })
     .catch(() => {
       message.error('Transaction was not successful')
     })
   }
 
+  const getUserInfo = (value) => {
+    axios.get(`${defaultAPI}get/userBalance?user=${value}`)
+      .then(res => {
+        const temp = [
+          res.data.address,
+          parseInt(res.data.gold).toLocaleString(),
+          parseInt(res.data.silver).toLocaleString(),
+          parseInt(res.data.bronze).toLocaleString()
+        ]
+        setAccountInfo(temp)
+      })
+      .catch(err => message.error(err.response.data.message))
+  }
+
+  const getUserOrders = () => {
+    axios.get(`${defaultAPI}get/userOrders?user=${account}`)
+      .then(res => {
+        const temp = []
+        let index = 0
+        res.data.gold.buyOrders.map(item => {
+          PushHelper(temp, index, 'Gold', 'Buy', item.price, item.volume)
+          index++;
+        })
+        res.data.gold.sellOrders.map(item => {
+          PushHelper(temp, index, 'Gold', 'Sell', item.price, item.volume)
+          index++;
+        })
+        res.data.silver.buyOrders.map(item => {
+          PushHelper(temp, index, 'Silver', 'Buy', item.price, item.volume)
+          index++;
+        })
+        res.data.silver.sellOrders.map(item => {
+          PushHelper(temp, index, 'Silver', 'Sell', item.price, item.volume)
+          index++;
+        })
+        res.data.bronze.buyOrders.map(item => {
+          PushHelper(temp, index, 'Bronze', 'Buy', item.price, item.volume)
+          index++;
+        })
+        res.data.bronze.sellOrders.map(item => {
+          PushHelper(temp, index, 'Bronze', 'Sell', item.price, item.volume)
+          index++;
+        })
+        setData(temp)
+      })
+      .catch(err => message.error(err))
+  }
+
   return (
-    <div className='home-swap-token-daddy'>
+    <div className='home-swap-token-daddy' style={{padding: '32px 0px'}}>
       <div className="home-swap-token" style={{ justifyContent: 'flex-start', marginBottom: '32px' }}>
         <Select
           className='select swap'
-          style={{ marginRight: '8px', width: '80px' }}
+          style={{ marginRight: '8px', width: '60px' }}
           defaultValue="Buy"
           options={marketOption}
           suffixIcon={false}
           onChange={(value) => setType(value)}
         />
-        <h2>Token Market</h2>
-      </div>
-      <div className="home-swap-token" style={{ justifyContent: 'flex-start', marginBottom: '32px' }}>
-        <Card title="Exchange Rates" style={{ width: '100%' }}>
-          <ExchangeLabelAndField label={exchangeRate} field={exchangeRateValue} />
-        </Card>
+        <h3>Token Market</h3>
       </div>
       <div className="home-swap-token" style={{ marginBottom: '16px' }}>
         <div>
@@ -104,11 +149,11 @@ function TokenMarket(account, accountInfo) {
           />
           <InputNumber 
             min={0} 
+            style={{width: '150px'}}
             addonBefore={
               type === 'buy' ? "Buying": 
               type === 'sell' ? "Selling": ""
             }
-            className='input'
             value={volume}
             status={error ? "error" : ""}
             onChange={(value) => {
@@ -146,15 +191,6 @@ function TokenMarket(account, accountInfo) {
           <Input disabled className='input' value={tabulate} />
         </div>
       </div>
-      <Space direction="vertical" size={4}>
-        <h3>Due to the exchange rates:</h3>
-        <span>1. Minimum of 10 Silver is required to buy/sell 1 Gold eg. 10 Silver to 1 Gold</span>
-        <span>2. Silver must be in multiples of 10 to buy/sell Gold eg. 30 Silver to 3 Gold, 60 Silver to 6 Gold</span>
-        <span>3. Minimum of 10 Bronze is required to buy/sell 1 Silver eg. 10 Bronze to 1 Silver</span>
-        <span>4. Bronze must be in multiples of 10 to buy/sell Silver eg. 30 Bronze to 3 Silver, 60 Bronze to 6 Silver</span>
-        <span>5. Minimum of 100 Bronze is required to buy/sell 1 Gold eg. 100 Bronze to 1 Gold</span>
-        <span>6. Bronze must be in multiples of 100 to buy/sell Gold eg. 300 Bronze to 3 Gold, 600 Bronze to 6 Gold</span>
-      </Space>
     </div>
   );
 }

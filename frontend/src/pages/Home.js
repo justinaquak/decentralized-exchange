@@ -11,16 +11,16 @@ import { UserOrder } from './home/UserOrder';
 
 function Home() {
   const [accountInfo, setAccountInfo] = useState(['', '', '', ''])
-  const [account, setAccount] = useState('');
+  const [account, setAccount] = useState('owner');
+  const [data, setData] = useState([]);
 
   return (
     <div className="home-big-daddy">
       <NavBar />
       <div className="home-content-daddy">
         <CustomCard content={AccountInfo(accountInfo, setAccountInfo, account, setAccount)} />
-        <CustomCard content={UserOrder(account)} />
-        <CustomCard content={TokenMarketLimit(account, accountInfo)} />
-        <CustomCard content={TokenMarket(account, accountInfo)} />
+        <CustomCard content={UserOrder(account, data, setData)} />
+        <CustomCard content={TokenMarketLimit(account, setAccountInfo, setData)} />
       </div>
     </div>
   );

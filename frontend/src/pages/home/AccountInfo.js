@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Button, Select, Space, message } from 'antd';
 import axios from 'axios';
 
@@ -15,6 +15,10 @@ const accountOption = [
 const accountLabel = ['Address:', 'Gold Balance:', 'Silver Balance:', 'Bronze Balance:']
 
 function AccountInfo(accountInfo, setAccountInfo, account, setAccount) {
+  useEffect(() => {
+    getUserInfo(account)
+  }, [])
+
   const getUserInfo = (value) => {
     axios.get(`${defaultAPI}get/userBalance?user=${value}`)
       .then(res => {
@@ -26,7 +30,7 @@ function AccountInfo(accountInfo, setAccountInfo, account, setAccount) {
         ]
         setAccountInfo(temp)
       })
-      .catch(err => message.error(err))
+      .catch(err => message.error(err.response.data.message))
   }
 
   const requestFaucet = (user) => {
@@ -34,7 +38,7 @@ function AccountInfo(accountInfo, setAccountInfo, account, setAccount) {
       axios.post(`${defaultAPI}transfer/faucet?user=${user}`)
         .then(() => {
           message.success('Request token is successful')
-          window.location.reload()
+          getUserInfo(user)
         })
         .catch(err => message.error(err.response.data.message))
     } else {
@@ -48,6 +52,7 @@ function AccountInfo(accountInfo, setAccountInfo, account, setAccount) {
         <h3 style={{ marginBottom: '0px', marginRight: '8px' }}>Account(s)</h3>
         <Select
           className='select'
+          value={account}
           options={accountOption}
           onChange={(value) => {
             setAccount(value)

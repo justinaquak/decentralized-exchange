@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { Table, Card, message, Button } from 'antd';
 import axios from 'axios';
 
@@ -8,9 +8,17 @@ import { defaultAPI } from './const';
 export const exchangeRate = ['1 GOLD', '1 SILVER', '100 BRONZE']
 export const exchangeRateValue = ['10 SILVER', '10 BRONZE', '1 GOLD']
 
-function UserOrder(account) {
-  const [data, setData] = useState([]);
+export const PushHelper = (temp, id, tokenName, type, price, volume) => {
+  temp.push({
+    id: id,
+    tokenName: tokenName,
+    type: type,
+    price: price || 0,
+    volume: volume || 0,
+  })
+}
 
+function UserOrder(account, data, setData) {
   useEffect(() => {
     if (account !== '' && account !== undefined) getUserOrders()
   }, [account])
@@ -21,69 +29,37 @@ function UserOrder(account) {
       const temp = []
       let index = 0
       res.data.gold.buyOrders.map(item => {
-        temp.push({
-          id: index,
-          tokenName: 'Gold',
-          type: 'Buy',
-          price: item.price || 0,
-          volume: item.volume || 0,
-        })
+        PushHelper(temp, index, 'Gold', 'Buy', item.price, item.volume)
         index++;
       })
       res.data.gold.sellOrders.map(item => {
-        temp.push({
-          id: index,
-          tokenName: 'Gold',
-          type: 'Sell',
-          price: item.price || 0,
-          volume: item.volume || 0,
-        })
+        PushHelper(temp, index, 'Gold', 'Sell', item.price, item.volume)
         index++;
       })
       res.data.silver.buyOrders.map(item => {
-        if (item.price)
-        temp.push({
-          id: index,
-          tokenName: 'Silver',
-          type: 'Buy',
-          price: item.price || 0,
-          volume: item.volume || 0,
-        })
+        PushHelper(temp, index, 'Silver', 'Buy', item.price, item.volume)
         index++;
       })
       res.data.silver.sellOrders.map(item => {
-        temp.push({
-          id: index,
-          tokenName: 'Silver',
-          type: 'Sell',
-          price: item.price || 0,
-          volume: item.volume || 0,
-        })
+        PushHelper(temp, index, 'Silver', 'Sell', item.price, item.volume)
         index++;
       })
       res.data.bronze.buyOrders.map(item => {
-        temp.push({
-          id: index,
-          tokenName: 'Bronze',
-          type: 'Buy',
-          price: item.price || 0,
-          volume: item.volume || 0,
-        })
+        PushHelper(temp, index, 'Bronze', 'Buy', item.price, item.volume)
         index++;
       })
       res.data.bronze.sellOrders.map(item => {
-        temp.push({
-          id: index,
-          tokenName: 'Bronze',
-          type: 'Sell',
-          price: item.price || 0,
-          volume: item.volume || 0,
-        })
+        PushHelper(temp, index, 'Bronze', 'Sell', item.price, item.volume)
         index++;
       })
       setData(temp)
     })
     .catch(err => message.error(err))
+  }
+
+  const deleteOrder = (type, tokenA, tokenB, price) => {
+    axios.post(`${defaultAPI}remove/${type}?tokenA=${tokenA}&tokenB=${tokenB}&tokenBPrice=${price}&user=${account}`)
+    .then(res => console.log(res))
   }
 
   const columns = [

@@ -210,8 +210,8 @@
 // const buyTokenLimit6 = await dexContract.connect(third).buyTokenLimit(bronzeAddress, goldAddress, 100, 2, 1);
 // await buyTokenLimit6.wait()
 
-// const batchExecution = await dexContract.batchExecutionBuy(goldAddress, silverAddress, bronzeAddress);
-// await batchExecution.wait()
+const batchExecution = await dexContract.batchExecutionBuy(goldAddress, silverAddress, bronzeAddress);
+await batchExecution.wait()
 
 // const faucet = await dexContract.connect(third).faucet(goldAddress, silverAddress, bronzeAddress, owner.address);
 // await faucet.wait()

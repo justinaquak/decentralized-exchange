@@ -3,6 +3,7 @@ const create = require('./create')
 const getter = require('./getter')
 const orders = require('./orders')
 const transfer = require('./transfer')
+const remove = require('./remove')
 
 const {contractAddress, goldAddress, silverAddress, bronzeAddress} = require('./constants.js')
 
@@ -28,11 +29,27 @@ async function contractInteractLogic(req, res) {
 
     const [owner, actor, third] = await hre.ethers.getSigners()
 
-    const buyTokenLimit = await dexContract.connect(owner).buyTokenLimit(goldAddress, silverAddress, 100, 10, 1000);
-    await buyTokenLimit.wait()
+    console.log(contractAddress)
+    // result = await dexContract.getResult();
+    // quantity = await dexContract.getQuantity();
+    // console.log(result)
+
+    // const batchExecution = await dexContract.batchExecutionBuy(goldAddress, silverAddress, bronzeAddress);
+    // await batchExecution.wait()
+    // const cancelOrder = await dexContract.connect(owner).cancelUserSellOrder(silverAddress, owner.address, 10, 100);
+    // await cancelOrder.wait()
+
+    // const buyTokenLimit = await dexContract.connect(owner).buyTokenLimit(goldAddress, silverAddress, 10, 10, 100);
+    // await buyTokenLimit.wait()
+    // const buyTokenLimit1 = await dexContract.connect(actor).buyTokenLimit(silverAddress, bronzeAddress, 1, 100, 10);
+    // await buyTokenLimit1.wait()
+    // const buyTokenLimit2 = await dexContract.connect(third).buyTokenLimit(bronzeAddress, goldAddress, 100, 1, 1);
+    // await buyTokenLimit2.wait()
+    // const buyTokenLimit = await dexContract.connect(owner).buyTokenLimit(silverAddress, goldAddress, 100, 1, 10);
+    // await buyTokenLimit.wait()
     // const buyTokenLimit1 = await dexContract.connect(actor).buyTokenLimit(silverAddress, bronzeAddress, 10, 100, 100);
     // await buyTokenLimit1.wait()
-    // const buyTokenLimit2 = await dexContract.connect(actor).buyTokenLimit(bronzeAddress, goldAddress, 1000, 1, 10);
+    // const buyTokenLimit2 = await dexContract.connect(actor).buyTokenMarket(bronzeAddress, goldAddress, 1, 100);
     // await buyTokenLimit2.wait()
 
     // const sellTokenLimit = await dexContract.connect(owner).sellTokenLimit(goldAddress, silverAddress, 100, 100, 1000);
@@ -81,6 +98,7 @@ async function dex(fastify, options) {
   fastify.register(getter, { prefix: '/get' })
   fastify.register(orders, { prefix: '/orders' })
   fastify.register(transfer, { prefix: '/transfer' })
+  fastify.register(remove, { prefix: '/remove' })
   fastify.post('/contract/interactToken', async (request, reply) => {
     await contractInteractToken(request, reply)
   })

@@ -803,7 +803,7 @@ contract Dex {
         }
     }
 
-    function getUserSellOrders(address _token) public view returns (uint256[] memory, uint256[] memory) {
+    function getUserSellOrders(address _token) public view returns (uint256[] memory, uint256[] memory, address[] memory) {
         uint256 sellPrice = tokenList[_token].minSellPrice;
         uint256 counter = 0;
         if (tokenList[_token].minSellPrice > 0) {
@@ -826,6 +826,7 @@ contract Dex {
 
         uint256[] memory ordersPrices = new uint256[](counter);
         uint256[] memory ordersVolumes = new uint256[](counter);
+        address[] memory ordersBaseTokens = new address[](counter);
 
         sellPrice = tokenList[_token].minSellPrice;
         counter = 0;
@@ -833,20 +834,17 @@ contract Dex {
         if (tokenList[_token].minSellPrice > 0) {
             while (sellPrice <= tokenList[_token].maxSellPrice) {
                 offered = false;
-                uint256 priceVolume = 0;
                 uint256 offerPointer = tokenList[_token].sellOrderBook[sellPrice].highestPriority;
 
                 while (offerPointer <= tokenList[_token].sellOrderBook[sellPrice].numOfOrders) {
                     if (tokenList[_token].sellOrderBook[sellPrice].orders[offerPointer].owner == msg.sender) {
                         ordersPrices[counter] = sellPrice;
-                        priceVolume = priceVolume + tokenList[_token].sellOrderBook[sellPrice].orders[offerPointer].amount;
+                        ordersVolumes[counter] = tokenList[_token].sellOrderBook[sellPrice].orders[offerPointer].amount;
+                        ordersBaseTokens[counter] = tokenList[_token].sellOrderBook[sellPrice].orders[offerPointer].sacrificedToken;
                         offered = true;
+                        counter = counter + 1;
                     }
                     offerPointer = offerPointer + 1;
-                }
-                if (offered) {
-                    ordersVolumes[counter] = priceVolume;
-                    counter = counter + 1;
                 }
                 if (sellPrice == tokenList[_token].sellOrderBook[sellPrice].higherPrice) {
                     break;
@@ -855,10 +853,10 @@ contract Dex {
                 }
             }
         }
-        return (ordersPrices, ordersVolumes);
+        return (ordersPrices, ordersVolumes, ordersBaseTokens);
     }
 
-    function getUserBuyOrders(address _token) public view returns (uint256[] memory, uint256[] memory) {
+    function getUserBuyOrders(address _token) public view returns (uint256[] memory, uint256[] memory, address[] memory) {
         uint256 buyPrice = tokenList[_token].minBuyPrice;
         uint256 counter = 0;
         if (tokenList[_token].maxBuyPrice > 0) {
@@ -882,6 +880,7 @@ contract Dex {
 
         uint256[] memory ordersPrices = new uint256[](counter);
         uint256[] memory ordersVolumes = new uint256[](counter);
+        address[] memory ordersBaseTokens = new address[](counter);
 
         buyPrice = tokenList[_token].minBuyPrice;
         counter = 0;
@@ -897,8 +896,10 @@ contract Dex {
                 while (offerPointer <= tokenList[_token].buyOrderBook[buyPrice].numOfOrders) {
                     if (tokenList[_token].buyOrderBook[buyPrice].orders[offerPointer].owner == msg.sender) {
                         ordersPrices[counter] = buyPrice;
-                        priceVolume = priceVolume + tokenList[_token].buyOrderBook[buyPrice].orders[offerPointer].amount;
+                        ordersVolumes[counter] = tokenList[_token].buyOrderBook[buyPrice].orders[offerPointer].amount;
+                        ordersBaseTokens[counter] = tokenList[_token].buyOrderBook[buyPrice].orders[offerPointer].sacrificedToken;
                         offered = true;
+                        counter = counter + 1;
                     }
                     offerPointer = offerPointer + 1;
                 }
@@ -915,7 +916,7 @@ contract Dex {
             }
         }
 
-        return (ordersPrices, ordersVolumes);
+        return (ordersPrices, ordersVolumes, ordersBaseTokens);
     }
 
     function getSellOrders(address _token) public view returns (uint256[] memory, uint256[] memory) {

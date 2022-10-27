@@ -40,6 +40,7 @@ function TokenMarketLimit(account, setAccountInfo, setData) {
         }
         getUserInfo(account);
         getUserOrders();
+        getMinAndMax();
       })
       .catch((err) => {
         message.error('Unable to transact right now, please try again');
@@ -59,6 +60,7 @@ function TokenMarketLimit(account, setAccountInfo, setData) {
         }
         getUserInfo(account);
         getUserOrders();
+        getMinAndMax();
       })
       .catch((err) => {
         message.error('Unable to transact right now, please try again');

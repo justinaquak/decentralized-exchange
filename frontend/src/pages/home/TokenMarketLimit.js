@@ -256,6 +256,7 @@ function TokenMarketLimit(account, setAccountInfo, setData, field, setField) {
         account={account}
         setAccountInfo={setAccountInfo}
         setData={setData}
+        setField={setField}
       />
     </div>
   );

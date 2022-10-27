@@ -9,7 +9,7 @@ import "../styles.css";
 export const exchangeRate = ["1 GOLD", "1 SILVER", "100 BRONZE"];
 export const exchangeRateValue = ["10 SILVER", "10 BRONZE", "1 GOLD"];
 
-function TokenMarket({ account, setAccountInfo, setData }) {
+function TokenMarket({ account, setAccountInfo, setData, setField }) {
   const [currency1, setCurrency1] = useState("GOLD");
   const [currency2, setCurrency2] = useState("");
   const [error, setError] = useState(false);
@@ -59,6 +59,7 @@ function TokenMarket({ account, setAccountInfo, setData }) {
         }
         getUserInfo(account);
         getUserOrders();
+        getMinAndMax();
       })
       .catch(() => {
         message.error("Transaction was not successful");
@@ -78,6 +79,7 @@ function TokenMarket({ account, setAccountInfo, setData }) {
         }
         getUserInfo(account);
         getUserOrders();
+        getMinAndMax();
       })
       .catch(() => {
         message.error("Transaction was not successful");
@@ -132,6 +134,12 @@ function TokenMarket({ account, setAccountInfo, setData }) {
         setData(temp);
       })
       .catch((err) => message.error(err));
+  };
+
+  const getMinAndMax = () => {
+    axios.get(`${defaultAPI}get/tokenPriceInfo`).then((res) => {
+      setField(res.data);
+    });
   };
 
   return (

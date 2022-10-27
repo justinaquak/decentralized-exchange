@@ -70,11 +70,21 @@ async function contractTransferLogic(req, res) {
 async function faucet(req, res) {
   const faucetRequest = async () => {
     let user = await getUser(req.query.user)
-    const contract = await hre.ethers.getContractAt('Dex', contractAddress)
-    const transfer = await contract.connect(user).faucet(goldAddress, silverAddress, bronzeAddress, await getUserAddress("owner"))
-    await transfer.wait()
-    const result = await contract.getResult();
-    if (result) {
+    let userAddress = await getUserAddress(req.query.user)
+    const goldContract = await hre.ethers.getContractAt('GOLD', goldAddress)
+    const transferGold = await goldContract.connect(user).faucet(await getUserAddress("owner"), userAddress)
+    await transferGold.wait()
+    const goldResult = await goldContract.getResult()
+    const silverContract = await hre.ethers.getContractAt('SILVER', silverAddress)
+    const transferSilver = await silverContract.connect(user).faucet(await getUserAddress("owner"), userAddress)
+    await transferSilver.wait()
+    const silverResult = await silverContract.getResult()
+    const bronzeContract = await hre.ethers.getContractAt('BRONZE', bronzeAddress)
+    const transferBronze = await bronzeContract.connect(user).faucet(await getUserAddress("owner"), userAddress)
+    await transferBronze.wait()
+    const bronzeResult = await bronzeContract.getResult()
+
+    if (goldResult && silverResult && bronzeResult) {
       return [true, "Faucet request successful."]
     } else {
        throw new Error("Faucet request failed, please request only after 2 minutes.")

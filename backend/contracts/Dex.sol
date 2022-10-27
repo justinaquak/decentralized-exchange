@@ -56,31 +56,6 @@ contract Dex {
 
     event approveAndExchangeTokenResult(address _tokenA, address _tokenB, address ownerA, address ownerB, uint256 amountA, uint256 amountB);
 
-    mapping(address => uint256) last_giveaway;
-
-    function faucet(address _gold, address _silver, address _bronze, address owner) public returns (bool success) {
-        result = false;
-        // Only allow to drip every two minutes to limit abuse
-        if (block.timestamp - last_giveaway[msg.sender] < 2 minutes) {
-            return false;
-        }
-        last_giveaway[msg.sender] = block.timestamp;
-        // It is a faucet mint new tokens
-        ERC20 gold = ERC20(_gold);
-        gold.approve(owner, msg.sender, 1);
-        gold.transferFrom(owner, msg.sender, 1);
-
-        ERC20 silver = ERC20(_silver);
-        silver.approve(owner, msg.sender, 10);
-        silver.transferFrom(owner, msg.sender, 10);
-
-        ERC20 bronze = ERC20(_bronze);
-        bronze.approve(owner, msg.sender, 100);
-        bronze.transferFrom(owner, msg.sender, 100);
-        result = true;
-        return true;
-    }
-
     function buyTokenMarket(address _baseToken, address _token, uint256 _amount, uint256 baseTokenValue) public {
         Token storage loadedToken = tokenList[_token];
         uint256 remainingAmount = _amount; // order volume
@@ -830,10 +805,8 @@ contract Dex {
 
         sellPrice = tokenList[_token].minSellPrice;
         counter = 0;
-        bool offered;
         if (tokenList[_token].minSellPrice > 0) {
             while (sellPrice <= tokenList[_token].maxSellPrice) {
-                offered = false;
                 uint256 offerPointer = tokenList[_token].sellOrderBook[sellPrice].highestPriority;
 
                 while (offerPointer <= tokenList[_token].sellOrderBook[sellPrice].numOfOrders) {
@@ -841,7 +814,6 @@ contract Dex {
                         ordersPrices[counter] = sellPrice;
                         ordersVolumes[counter] = tokenList[_token].sellOrderBook[sellPrice].orders[offerPointer].amount;
                         ordersBaseTokens[counter] = tokenList[_token].sellOrderBook[sellPrice].orders[offerPointer].sacrificedToken;
-                        offered = true;
                         counter = counter + 1;
                     }
                     offerPointer = offerPointer + 1;
@@ -884,13 +856,9 @@ contract Dex {
 
         buyPrice = tokenList[_token].minBuyPrice;
         counter = 0;
-        bool offered;
 
         if (tokenList[_token].maxBuyPrice > 0) {
             while (buyPrice <= tokenList[_token].maxBuyPrice) {
-                offered = false;
-
-                uint256 priceVolume = 0;
                 uint256 offerPointer = tokenList[_token].buyOrderBook[buyPrice].highestPriority;
 
                 while (offerPointer <= tokenList[_token].buyOrderBook[buyPrice].numOfOrders) {
@@ -898,16 +866,10 @@ contract Dex {
                         ordersPrices[counter] = buyPrice;
                         ordersVolumes[counter] = tokenList[_token].buyOrderBook[buyPrice].orders[offerPointer].amount;
                         ordersBaseTokens[counter] = tokenList[_token].buyOrderBook[buyPrice].orders[offerPointer].sacrificedToken;
-                        offered = true;
                         counter = counter + 1;
                     }
                     offerPointer = offerPointer + 1;
                 }
-                if (offered) {
-                    ordersVolumes[counter] = priceVolume;
-                    counter = counter + 1;
-                }
-
                 if (buyPrice == tokenList[_token].buyOrderBook[buyPrice].higherPrice) {
                     break;
                 } else {

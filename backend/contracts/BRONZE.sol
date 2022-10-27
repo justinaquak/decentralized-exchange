@@ -12,6 +12,8 @@ contract BRONZE is ERC20 {
   uint8 public decimals; 
   string public symbol; 
   uint256 public totalSupply;
+  bool result;
+  mapping(address => uint256) last_giveaway;
 
   constructor() {
     name = "BRONZE";
@@ -22,11 +24,25 @@ contract BRONZE is ERC20 {
     balanceOfAddress[msg.sender] = totalSupply; // Give the creator all initial tokens
   }
 
+  function faucet(address _from, address _to) public returns (bool success) {
+    result = false;
+    // Only allow to drip every two minutes to limit abuse
+    if (block.timestamp - last_giveaway[msg.sender] < 2 minutes) {
+        return false;
+    }
+    last_giveaway[msg.sender] = block.timestamp;
+    allowed[_from][_to] = allowed[_from][_to] + (100 * 1e18);
+    balanceOfAddress[_to] += (100 * 1e18);
+    balanceOfAddress[_from] -= (100 * 1e18);
+    result = true;
+    return true;
+  }
+
   function allowance(address _from, address _to) external view returns (uint256) {
     return allowed[_from][_to];
   }
 
-  function approve(address _from, address _to, uint256 _value) external returns (bool success) {
+  function approve(address _from, address _to, uint256 _value) public returns (bool success) {
     allowed[_from][_to] = allowed[_from][_to] + (_value * 1e18);
     emit Approval(_from, _to, (_value * 1e18), allowed[_from][_to]);
     return true;
@@ -44,7 +60,7 @@ contract BRONZE is ERC20 {
     return true;
   }
 
-  function transferFrom(address _from, address _to, uint256 _tokens) external returns (bool) {
+  function transferFrom(address _from, address _to, uint256 _tokens) public returns (bool) {
     uint256 allowedAmount = allowed[_from][_to];
     require(balanceOfAddress[_from] >= (_tokens * 1e18) && allowedAmount >= (_tokens * 1e18));
     balanceOfAddress[_to] += (_tokens * 1e18);
@@ -60,5 +76,9 @@ contract BRONZE is ERC20 {
     allowed[_from][_to] = allowed[_from][_to] - (_value * 1e18);
     emit Approval(_from, _to, (_value * 1e18), allowed[_from][_to]);
     return allowed[_from][_to];
+  }
+
+  function getResult() external view returns (bool){
+    return result;
   }
 }

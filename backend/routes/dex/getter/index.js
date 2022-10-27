@@ -23,6 +23,18 @@ async function getUserAddress(user) {
   }
 }
 
+function getToken(address) {
+  if (address == goldAddress) {
+    return "GOLD"
+  } else if (address == silverAddress) {
+    return "SILVER"
+  } else if (address == bronzeAddress) {
+    return "BRONZE"
+  } else {
+    return ""
+  }
+}
+
 /*
 [
   [ BigNumber { value: "100" }, BigNumber { value: "100" } ],
@@ -44,6 +56,24 @@ function parseOrders(array) {
     if (pricesArr[i].toString() != "0") {
       data.price = pricesArr[i].toString()
       data.volume = volumeArr[i].toString()
+      newArr.push(data)
+    }
+  }
+  return newArr
+}
+
+function parseUserOrders(array) {
+  if (array[0].length == 0) return []
+  const pricesArr = array[0]
+  const volumeArr = array[1]
+  const tokensArr = array[2]
+  let newArr = []
+  for (let i = 0; i < pricesArr.length; i++) {
+    let data = {}
+    if (pricesArr[i].toString() != "0") {
+      data.price = pricesArr[i].toString()
+      data.volume = volumeArr[i].toString()
+      data.token = getToken(tokensArr[i].toString())
       newArr.push(data)
     }
   }
@@ -159,12 +189,12 @@ async function getUserOrders(req, res) {
     let gold = {}
     let silver = {}
     let bronze = {}
-    gold.buyOrders = parseOrders(goldBuyOrders)
-    gold.sellOrders = parseOrders(goldSellOrders)
-    silver.buyOrders = parseOrders(silverBuyOrders)
-    silver.sellOrders = parseOrders(silverSellOrders)
-    bronze.buyOrders = parseOrders(bronzeBuyOrders)
-    bronze.sellOrders = parseOrders(bronzeSellOrders)
+    gold.buyOrders = parseUserOrders(goldBuyOrders)
+    gold.sellOrders = parseUserOrders(goldSellOrders)
+    silver.buyOrders = parseUserOrders(silverBuyOrders)
+    silver.sellOrders = parseUserOrders(silverSellOrders)
+    bronze.buyOrders = parseUserOrders(bronzeBuyOrders)
+    bronze.sellOrders = parseUserOrders(bronzeSellOrders)
 
     return [gold, silver, bronze]
   }

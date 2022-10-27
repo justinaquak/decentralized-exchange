@@ -88,27 +88,75 @@ function TokenMarketLimit(account, setAccountInfo, setData, field, setField) {
         const temp = [];
         let index = 0;
         res.data.gold.buyOrders.map((item) => {
-          PushHelper(temp, index, "Gold", "Buy", item.price, item.volume);
+          PushHelper(
+            temp,
+            index,
+            "Gold",
+            "Buy",
+            item.price,
+            item.volume,
+            item.token
+          );
           index++;
         });
         res.data.gold.sellOrders.map((item) => {
-          PushHelper(temp, index, "Gold", "Sell", item.price, item.volume);
+          PushHelper(
+            temp,
+            index,
+            "Gold",
+            "Sell",
+            item.price,
+            item.volume,
+            item.token
+          );
           index++;
         });
         res.data.silver.buyOrders.map((item) => {
-          PushHelper(temp, index, "Silver", "Buy", item.price, item.volume);
+          PushHelper(
+            temp,
+            index,
+            "Silver",
+            "Buy",
+            item.price,
+            item.volume,
+            item.token
+          );
           index++;
         });
         res.data.silver.sellOrders.map((item) => {
-          PushHelper(temp, index, "Silver", "Sell", item.price, item.volume);
+          PushHelper(
+            temp,
+            index,
+            "Silver",
+            "Sell",
+            item.price,
+            item.volume,
+            item.token
+          );
           index++;
         });
         res.data.bronze.buyOrders.map((item) => {
-          PushHelper(temp, index, "Bronze", "Buy", item.price, item.volume);
+          PushHelper(
+            temp,
+            index,
+            "Bronze",
+            "Buy",
+            item.price,
+            item.volume,
+            item.token
+          );
           index++;
         });
         res.data.bronze.sellOrders.map((item) => {
-          PushHelper(temp, index, "Bronze", "Sell", item.price, item.volume);
+          PushHelper(
+            temp,
+            index,
+            "Bronze",
+            "Sell",
+            item.price,
+            item.volume,
+            item.token
+          );
           index++;
         });
         setData(temp);

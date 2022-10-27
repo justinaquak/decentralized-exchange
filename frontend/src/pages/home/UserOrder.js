@@ -8,13 +8,14 @@ import { defaultAPI } from "./const";
 export const exchangeRate = ["1 GOLD", "1 SILVER", "100 BRONZE"];
 export const exchangeRateValue = ["10 SILVER", "10 BRONZE", "1 GOLD"];
 
-export const PushHelper = (temp, id, tokenName, type, price, volume) => {
+export const PushHelper = (temp, id, tokenName, type, price, volume, token) => {
   temp.push({
     id: id,
     tokenName: tokenName,
     type: type,
     price: price || 0,
     volume: volume || 0,
+    token: token || "",
   });
 };
 
@@ -30,27 +31,75 @@ function UserOrder(account, data, setData) {
         const temp = [];
         let index = 0;
         res.data.gold.buyOrders.map((item) => {
-          PushHelper(temp, index, "Gold", "Buy", item.price, item.volume);
+          PushHelper(
+            temp,
+            index,
+            "Gold",
+            "Buy",
+            item.price,
+            item.volume,
+            item.token
+          );
           index++;
         });
         res.data.gold.sellOrders.map((item) => {
-          PushHelper(temp, index, "Gold", "Sell", item.price, item.volume);
+          PushHelper(
+            temp,
+            index,
+            "Gold",
+            "Sell",
+            item.price,
+            item.volume,
+            item.token
+          );
           index++;
         });
         res.data.silver.buyOrders.map((item) => {
-          PushHelper(temp, index, "Silver", "Buy", item.price, item.volume);
+          PushHelper(
+            temp,
+            index,
+            "Silver",
+            "Buy",
+            item.price,
+            item.volume,
+            item.token
+          );
           index++;
         });
         res.data.silver.sellOrders.map((item) => {
-          PushHelper(temp, index, "Silver", "Sell", item.price, item.volume);
+          PushHelper(
+            temp,
+            index,
+            "Silver",
+            "Sell",
+            item.price,
+            item.volume,
+            item.token
+          );
           index++;
         });
         res.data.bronze.buyOrders.map((item) => {
-          PushHelper(temp, index, "Bronze", "Buy", item.price, item.volume);
+          PushHelper(
+            temp,
+            index,
+            "Bronze",
+            "Buy",
+            item.price,
+            item.volume,
+            item.token
+          );
           index++;
         });
         res.data.bronze.sellOrders.map((item) => {
-          PushHelper(temp, index, "Bronze", "Sell", item.price, item.volume);
+          PushHelper(
+            temp,
+            index,
+            "Bronze",
+            "Sell",
+            item.price,
+            item.volume,
+            item.token
+          );
           index++;
         });
         setData(temp);
@@ -63,7 +112,13 @@ function UserOrder(account, data, setData) {
       .post(
         `${defaultAPI}remove/${type}?tokenA=${tokenA}&tokenB=${tokenB}&tokenBPrice=${price}&user=${account}`
       )
-      .then((res) => console.log(res));
+      .then(() => {
+        message.success("Successfully deleted orders");
+        getUserOrders();
+      })
+      .catch(() => {
+        message.error("Unable to delete any records");
+      });
   };
 
   const columns = [
@@ -87,7 +142,24 @@ function UserOrder(account, data, setData) {
       title: "Actions",
       dataIndex: "",
       render: (_, record) => {
-        return <Button onClick={() => console.log(record)}>Delete</Button>;
+        return (
+          <Button
+            onClick={() => {
+              deleteOrder(
+                record.type.toLowerCase() === "buy"
+                  ? "buyOrder"
+                  : record.type === "sell"
+                  ? "sellOrder"
+                  : "",
+                record.token,
+                record.tokenName.toUpperCase(),
+                record.price
+              );
+            }}
+          >
+            Delete
+          </Button>
+        );
       },
     },
   ];

@@ -108,6 +108,36 @@ function parsePriceInfo(array){
   return [buyPrice, sellPrice]
 }
 
+function getVolumeWithSamePrice(array, price) {
+  const pricesArr = array[0]
+  const volumeArr = array[1]
+  let volume = 0
+  for (let i = 0; i < pricesArr.length; i++) {
+    if (pricesArr[i].toString() == price) {
+      volume += parseInt(volumeArr[i].toString())
+    }
+  }
+  return volume
+}
+
+async function getVolumeByPrice(price, address, isBuy) {
+  if (price == "No sell orders available" || price == "No buy orders available") {
+    return price
+  } else {
+    if (isBuy) {
+      const dexContract = await hre.ethers.getContractAt('Dex', contractAddress)
+      const buyOrders = await dexContract.getBuyOrders(address)
+      const volume = getVolumeWithSamePrice(buyOrders, price)
+      return volume
+    } else {
+      const dexContract = await hre.ethers.getContractAt('Dex', contractAddress)
+      const buyOrders = await dexContract.getSellOrders(address)
+      const volume = getVolumeWithSamePrice(buyOrders, price)
+      return volume
+    }
+  }
+}
+
 async function getOrderBooks(req, res) {
   const preResponse = async () => {
     const dexContract = await hre.ethers.getContractAt('Dex', contractAddress)
@@ -158,10 +188,16 @@ async function getTokenPriceInfo(req, res) {
     
     gold.buyPrice = goldPriceInfo[0]
     gold.sellPrice = goldPriceInfo[1]
+    gold.buyVolume = await getVolumeByPrice(goldPriceInfo[0], goldAddress, false)
+    gold.sellVolume = await getVolumeByPrice(goldPriceInfo[1], goldAddress, true)
     silver.buyPrice = silverPriceInfo[0]
     silver.sellPrice = silverPriceInfo[1]
+    silver.buyVolume = await getVolumeByPrice(silverPriceInfo[0], silverAddress, false)
+    silver.sellVolume = await getVolumeByPrice(silverPriceInfo[1], silverAddress, true)
     bronze.buyPrice = bronzePriceInfo[0]
     bronze.sellPrice = bronzePriceInfo[1]
+    bronze.buyVolume = await getVolumeByPrice(bronzePriceInfo[0], bronzeAddress, false)
+    bronze.sellVolume = await getVolumeByPrice(bronzePriceInfo[1], bronzeAddress, true)
 
     return [gold, silver, bronze]
   }

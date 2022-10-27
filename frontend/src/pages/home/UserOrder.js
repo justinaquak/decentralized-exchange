@@ -19,10 +19,25 @@ export const PushHelper = (temp, id, tokenName, type, price, volume, token) => {
   });
 };
 
-function UserOrder(account, data, setData) {
+function UserOrder(account, setAccountInfo, data, setData, setField) {
   useEffect(() => {
     if (account !== "" && account !== undefined) getUserOrders();
   }, [account]);
+
+  const getUserInfo = (value) => {
+    axios
+      .get(`${defaultAPI}get/userBalance?user=${value}`)
+      .then((res) => {
+        const temp = [
+          res.data.address,
+          parseInt(res.data.gold).toLocaleString(),
+          parseInt(res.data.silver).toLocaleString(),
+          parseInt(res.data.bronze).toLocaleString(),
+        ];
+        setAccountInfo(temp);
+      })
+      .catch((err) => message.error("Unable to get user information"));
+  };
 
   const getUserOrders = () => {
     axios
@@ -107,6 +122,12 @@ function UserOrder(account, data, setData) {
       .catch((err) => message.error(err));
   };
 
+  const getMinAndMax = () => {
+    axios.get(`${defaultAPI}get/tokenPriceInfo`).then((res) => {
+      setField(res.data);
+    });
+  };
+
   const deleteOrder = (type, tokenA, tokenB, price) => {
     axios
       .post(
@@ -115,6 +136,8 @@ function UserOrder(account, data, setData) {
       .then(() => {
         message.success("Successfully deleted orders");
         getUserOrders();
+        getUserInfo(account);
+        getMinAndMax();
       })
       .catch(() => {
         message.error("Unable to delete any records");

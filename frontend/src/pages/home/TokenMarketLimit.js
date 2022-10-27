@@ -8,8 +8,7 @@ import "../styles.css";
 import ExchangeRateLabelAndField from "../../components/ExchangeRateLabelAndField";
 import { TokenMarket } from "./TokenMarket";
 
-function TokenMarketLimit(account, setAccountInfo, setData) {
-  const [field, setField] = useState([]);
+function TokenMarketLimit(account, setAccountInfo, setData, field, setField) {
   const [type, setType] = useState("buy");
 
   const [currency1, setCurrency1] = useState("GOLD");
@@ -43,7 +42,7 @@ function TokenMarketLimit(account, setAccountInfo, setData) {
         getMinAndMax();
       })
       .catch((err) => {
-        message.error('Unable to transact right now, please try again');
+        message.error("Unable to transact right now, please try again");
       });
   };
 
@@ -63,7 +62,7 @@ function TokenMarketLimit(account, setAccountInfo, setData) {
         getMinAndMax();
       })
       .catch((err) => {
-        message.error('Unable to transact right now, please try again');
+        message.error("Unable to transact right now, please try again");
       });
   };
 
@@ -79,7 +78,7 @@ function TokenMarketLimit(account, setAccountInfo, setData) {
         ];
         setAccountInfo(temp);
       })
-      .catch((err) => message.error('Unable to get user information'));
+      .catch((err) => message.error("Unable to get user information"));
   };
 
   const getUserOrders = () => {

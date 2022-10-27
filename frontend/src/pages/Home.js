@@ -13,6 +13,7 @@ function Home({ init }) {
   const [accountInfo, setAccountInfo] = useState(["", "", "", ""]);
   const [account, setAccount] = useState("owner");
   const [data, setData] = useState([]);
+  const [field, setField] = useState([]);
 
   return (
     <div className="home-big-daddy">
@@ -26,9 +27,17 @@ function Home({ init }) {
             setAccount
           )}
         />
-        <CustomCard content={UserOrder(account, data, setData)} />
         <CustomCard
-          content={TokenMarketLimit(account, setAccountInfo, setData)}
+          content={UserOrder(account, setAccountInfo, data, setData, setField)}
+        />
+        <CustomCard
+          content={TokenMarketLimit(
+            account,
+            setAccountInfo,
+            setData,
+            field,
+            setField
+          )}
         />
       </div>
     </div>

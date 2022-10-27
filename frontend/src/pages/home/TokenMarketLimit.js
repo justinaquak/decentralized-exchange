@@ -42,7 +42,7 @@ function TokenMarketLimit(account, setAccountInfo, setData) {
         getUserOrders();
       })
       .catch((err) => {
-        message.error(err.response.data.message);
+        message.error('Unable to transact right now, please try again');
       });
   };
 
@@ -61,7 +61,7 @@ function TokenMarketLimit(account, setAccountInfo, setData) {
         getUserOrders();
       })
       .catch((err) => {
-        message.error(err.response.data.message);
+        message.error('Unable to transact right now, please try again');
       });
   };
 
@@ -77,7 +77,7 @@ function TokenMarketLimit(account, setAccountInfo, setData) {
         ];
         setAccountInfo(temp);
       })
-      .catch((err) => message.error(err.response.data.message));
+      .catch((err) => message.error('Unable to get user information'));
   };
 
   const getUserOrders = () => {

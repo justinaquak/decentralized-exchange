@@ -36,7 +36,7 @@ function AccountInfo(accountInfo, setAccountInfo, account, setAccount) {
         ];
         setAccountInfo(temp);
       })
-      .catch((err) => message.error(err.response.data.message));
+      .catch((err) => message.error('Unable to get user information'));
   };
 
   const requestFaucet = (user) => {

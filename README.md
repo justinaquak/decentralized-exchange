@@ -29,18 +29,21 @@ npm install
 ```
 npx hardhat node
 npx hardhat compile
-nodemon server
+node server
 ```
 # Table of Contents
 1. [Assumptions](#assumptions)
 2. [Detailed Installation Guide](#detailed-installation-guide) 
 3. [Faucet](#faucet)
-4. [Limit Market](#limit-market)
+4. [Limit Orders](#limit-orders)
+5. [Market Orders](#market-orders)
+6. [Cancel Order](#cancel-order)
 
 # Assumptions
 1. Private keys will be entrusted to the application. For testnet and mainnet do create an .env to store your private keys so that our application can retrieve your meta wallets
 2. For testing purposes we will be using hardhat local network. Accounts are fixed and preconfigured.
 3. Multiple terminals will be needed
+4. If there is a need to restart any portion (eg. client or server), please restart **everything** (npx hardhat node, client and server) for a smoother user experience. 
 
 # Detailed Installation Guide
 ## For Testnet and Mainnet users
@@ -71,7 +74,7 @@ The loaded webpage will auto deploy tokens and an interacting contract under you
 
 # Faucet
 
-Click on request to request GOLD SILVER and BRONZE
+Click on request to request GOLD, SILVER and BRONZE
 
 ![image](https://user-images.githubusercontent.com/72204360/198329290-9625b5de-40e1-4d09-91b7-03425556eeeb.png)
 
@@ -82,3 +85,41 @@ Balance will be updated on click
 Faucet supposed to be rate limited to once per day however for testing and grading purposes we rate limited per account to once per 2 minutes
 
 ![image](https://user-images.githubusercontent.com/72204360/198329511-175d4080-4984-44c8-9d05-103763249b84.png)
+
+# Limit Orders
+
+To place a buy limit order, select the token you want to buy on the left, with the price and the amount you would like. On the right, select the token you would like to exchange with. Once done, click on the exchange icon in the middle to execute the trade. Take note of the account selected at the top panel, as this is the account that would be executing the trade. If there are suitable orders, the order will be fulfilled instantly, else they will be added into the orderbook. 
+
+![image](https://user-images.githubusercontent.com/73157214/198345470-46194302-857d-4ff2-9f31-ae3b2c25e7a5.png)
+
+![image](https://user-images.githubusercontent.com/73157214/198347340-ef133fae-0ab3-454c-8e84-e93bb7506199.png)
+
+After doing so, the orderbook should be updated (based on certain conditions), and the user's balance should be updated as well. This is because the exchange will lockup the token on the right, in this case the Bronze token. 
+
+![image](https://user-images.githubusercontent.com/73157214/198346530-aec072f3-656b-4280-969e-46cb0fd86850.png)
+
+If you would like to place a sell order instead, click on the top left "Buy" icon toggle to "Sell" instead. 
+
+![image](https://user-images.githubusercontent.com/73157214/198347655-624cb927-ac74-406a-b9f4-3846cb71dca6.png)
+
+For a sell order, the token on the left is the one we want to sell, and we are specifying the price and amount of the tokens. 
+
+# Market Orders
+
+For a market order, all you need to specify is the number of tokens, and the order will be fulfilled/partially fulfilled if there are suitable orders. 
+
+![image](https://user-images.githubusercontent.com/73157214/198350603-802bf9bd-ecc1-4614-bf9d-b86c925101a2.png)
+
+The exchange will also preemptively calculate the amount of tokens you would need in order to exchange for your wanted tokens.
+
+# Cancel Order
+
+If a user would like to cancel their order, they can do so in the User Orders component. 
+
+![image](https://user-images.githubusercontent.com/73157214/198353242-2134469d-cdba-4b28-b18f-853b0383f7fe.png)
+
+After the order is cancelled, the locked up tokens are also returned to the user. 
+
+![image](https://user-images.githubusercontent.com/73157214/198353346-acef55e6-0927-47e4-9344-b63593e4f9ec.png)
+
+

@@ -2,15 +2,16 @@
 Decentralized Exchange Application
 
 # Project Description
-A minimal viable Decentralized Exchange (DEX) on Ethereum and a simple front-end website, which supports listing of available asset tokens on the marketplace, submission of trading order, matching and execution of orders (i.e., swapping/exchanging/trading assets), and most importantly, in our DEX, users have the ultimate controlof his/her own digital assets.
+A minimal viable Decentralized Exchange (DEX) on Ethereum and a simple front-end website, which supports listing of available asset tokens on the marketplace, submission of trading order, matching and execution of orders (i.e., swapping/exchanging/trading assets), and most importantly, in our DEX, users have the ultimate control of his/her own digital assets.
 
 # How to Install and Run the Project
 - clone the project with:
 ```
-git clone https://github.com/justinaquak/fyp-blockchain/ name OR
+git clone https://github.com/justinaquak/fyp-blockchain/ OR
 download zip
 ```
 - open project on Visual Studio Code
+- requires three terminals
 - npm install in frontend directory
 ```
 cd frontend
@@ -34,16 +35,19 @@ node server
 # Table of Contents
 1. [Assumptions](#assumptions)
 2. [Detailed Installation Guide](#detailed-installation-guide) 
-3. [Faucet](#faucet)
-4. [Limit Orders](#limit-orders)
-5. [Market Orders](#market-orders)
-6. [Cancel Order](#cancel-order)
+3. [Diagrams](#diagram)
+4. [Faucet](#faucet)
+5. [Limit Orders](#limit-orders)
+6. [Market Orders](#market-orders)
+7. [Cancel Order](#cancel-order)
 
 # Assumptions
 1. Private keys will be entrusted to the application. For testnet and mainnet do create an .env to store your private keys so that our application can retrieve your meta wallets
 2. For testing purposes we will be using hardhat local network. Accounts are fixed and preconfigured.
 3. Multiple terminals will be needed
-4. If there is a need to restart any portion (eg. client or server), please restart **everything** (npx hardhat node, client and server) for a smoother user experience. 
+4. If there is a need to restart any portion (eg. client or server), please restart **everything** (npx hardhat node, client and server etc.) for a smoother user experience. 
+5. Three tokens have been supplied to the main owner account of 1,000,000 amount
+6. It can only support maximum of 3 accounts
 
 # Detailed Installation Guide
 ## For Testnet and Mainnet users
@@ -51,20 +55,20 @@ In the root of the backend directory create an .env file (for testnet and mainne
 
 ![image](https://user-images.githubusercontent.com/72204360/198324490-12f56bad-6efd-49df-9aea-a375da170685.png)
 
-Change the default network to goerli for example or your prefered net
+Change the default network to goerli for example or your prefered net in ```hardhat.config.js```. We will be using localhost in for demo purposes.
 
 ![image](https://user-images.githubusercontent.com/72204360/198324434-3b89acbb-c4b8-4f80-a7f6-24478e65e91d.png)
 
 ## For Local Hardhat Network
-For users using the ```npx hardhat node``` command, accounts are already fixed and preconfigured, no actions is needed
+Users must start the hardhat server using the ```npx hardhat node``` command, accounts are already fixed and preconfigured, no actions is required
 
 ![image](https://user-images.githubusercontent.com/72204360/198326003-93bb13d2-2142-4842-88a4-9b3851cb8240.png)
 
-After the server has been hosted with ```node server```:
+After which, start the server with ```node server```:
 
 ![image](https://user-images.githubusercontent.com/72204360/198327240-791a0c68-c055-4346-8edf-712dadd7485e.png)
 
-Create another terminal for the client with to ```npm start```:
+Create another terminal for the client and to run the client use the command ```npm start```:
 
 ![image](https://user-images.githubusercontent.com/72204360/198327541-e472636d-d9b0-4fe1-9309-f5bc976e73b1.png)
 
@@ -72,9 +76,16 @@ The loaded webpage will auto deploy tokens and an interacting contract under you
 
 ![image](https://user-images.githubusercontent.com/72204360/198328305-90e5c56a-3276-4aeb-91f1-c2e411e104f6.png)
 
+# Diagrams
+![UML diagram](https://user-images.githubusercontent.com/72204360/198621815-3cba2152-5e8b-459a-bc6a-0a25c34371d2.jpg)
+
+![UML diagram (1)](https://user-images.githubusercontent.com/72204360/198623413-ec66c638-a8ce-41f6-aa46-7e4fc4ad3dd5.jpg)
+
+![UML diagram (2)](https://user-images.githubusercontent.com/72204360/198623467-44568541-cf72-409c-a379-219d96c7aefa.jpg)
+
 # Faucet
 
-Click on request to request GOLD, SILVER and BRONZE
+Click on ```Request``` to request GOLD, SILVER and BRONZE tokens
 
 ![image](https://user-images.githubusercontent.com/72204360/198329290-9625b5de-40e1-4d09-91b7-03425556eeeb.png)
 
@@ -82,7 +93,7 @@ Balance will be updated on click
 
 ![image](https://user-images.githubusercontent.com/72204360/198329475-c88c4002-88fe-47c2-9450-e0820587f32c.png)
 
-Faucet supposed to be rate limited to once per day however for testing and grading purposes we rate limited per account to once per 2 minutes
+Faucets supposed to be rate limited to once per day per account however for testing and grading purposes we rate limited per account to once per 2 minutes per account
 
 ![image](https://user-images.githubusercontent.com/72204360/198329511-175d4080-4984-44c8-9d05-103763249b84.png)
 

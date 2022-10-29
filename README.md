@@ -38,11 +38,12 @@ npm start
 # Table of Contents
 1. [Assumptions](#assumptions)
 2. [Detailed Installation Guide](#detailed-installation-guide) 
-3. [Diagrams](#diagram)
-4. [Faucet](#faucet)
-5. [Limit Orders](#limit-orders)
-6. [Market Orders](#market-orders)
-7. [Cancel Order](#cancel-order)
+3. [Diagrams](#diagrams)
+4. [Feature Requirements](#feature-requirements)
+5. [Faucet](#faucet)
+6. [Limit Orders](#limit-orders)
+7. [Market Orders](#market-orders)
+8. [Cancel Order](#cancel-order)
 
 # Assumptions
 1. Private keys will be entrusted to the application. For testnet and mainnet do create an .env to store your private keys so that our application can retrieve your meta wallets / addresses
@@ -87,6 +88,14 @@ The loaded webpage will automated deployment and deploy ERC20 tokens and an inte
 ![UML diagram (1)](https://user-images.githubusercontent.com/72204360/198623413-ec66c638-a8ce-41f6-aa46-7e4fc4ad3dd5.jpg)
 
 ![UML diagram (2)](https://user-images.githubusercontent.com/72204360/198623467-44568541-cf72-409c-a379-219d96c7aefa.jpg)
+
+# Feature Requirements
+1. We have created three ERC20 tokens GOLD(AU), SILVER(AG), BRONZE(CU)
+2. Limit Order
+3. Match Order
+4. Support Cancelling Order
+5. Batch execution
+6. Conditional Order
 
 # Faucet
 

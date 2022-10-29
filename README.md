@@ -7,7 +7,7 @@ A minimal viable Decentralized Exchange (DEX) on Ethereum and a simple front-end
 # How to Install and Run the Project
 - clone the project with:
 ```
-git clone https://github.com/justinaquak/fyp-blockchain/ OR
+git clone https://github.com/justinaquak/decentralized-exchange/ OR
 download zip
 ```
 - open project on Visual Studio Code
@@ -46,49 +46,50 @@ npm start
 8. [Cancel Order](#cancel-order)
 
 # Assumptions
-1. Private keys will be entrusted to the application. For testnet and mainnet do create an .env to store your private keys so that our application can retrieve your meta wallets / addresses
-2. For testing purposes we will be using hardhat local network. Accounts are fixed and preconfigured.
-3. Multiple terminals will be needed
-4. If there is a need to restart any portion (eg. client or server), please restart **everything** (npx hardhat node, client and server etc.) for a smoother user experience. 
-5. Three tokens have been supplied to the main owner account of 1,000,000 amount
-6. It can only support maximum of 3 accounts
-7. To simulate liquidity in the market, we set value to each of our tokens, namely GOLD at $100, SILVER at $10 and BRONZE at $1. 
+1. The application only supports up to 3 accounts and only three ERC20 tokens are created for this application ```GOLD, SILVER, BRONZE```
+2. Private keys will be entrusted to the application. For users trying the testnet and mainnet do create an .env to store your private keys so that our application can retrieve your meta wallets / addresses
+3. For testing purposes and demonstration purposes we will be using the hardhat local network. The accounts are already fixed and preconfigured.
+4. If there is a need to restart any portion (eg. client or server), please restart **everything** ```npx hardhat node, client and server etc.``` for a smoother user experience. 
+5. To simulate liquidity in the market, we set a value to each of our tokens, namely GOLD at $100, SILVER at $10 and BRONZE at $1. 
 
 # Detailed Installation Guide
+
 ## For Testnet and Mainnet users
-In the root of the backend directory create an ```.env``` file (for testnet and mainnet) for example:
+In the root of the backend directory create a ```.env``` file for example:
 
-![image](https://user-images.githubusercontent.com/72204360/198324490-12f56bad-6efd-49df-9aea-a375da170685.png)
+![image](https://user-images.githubusercontent.com/72204360/198837988-62dca814-a68e-4fb4-b715-f7f89700c18a.png)
 
-Change the default network to goerli for example or your prefered net in ```hardhat.config.js```. We will be using localhost in for demo purposes.
+Define your own testnet or mainnet network with the documentations [here](https://hardhat.org/hardhat-runner/docs/config). Then change the default network to your prefered net in ```hardhat.config.js```. We will be using hardhat's local server for demo purposes.
 
-![image](https://user-images.githubusercontent.com/72204360/198324434-3b89acbb-c4b8-4f80-a7f6-24478e65e91d.png)
+![image](https://user-images.githubusercontent.com/72204360/198838810-422ca8b8-b145-451c-a039-86f51f55a751.png)
 
-## For Local Hardhat Network
-Users must start the hardhat server using the ```npx hardhat node``` command, accounts are already fixed and preconfigured, no actions is required
+## For Local Hardhat Network users
+Users must start the hardhat server using the ```npx hardhat node``` command, the accounts are already fixed and preconfigured
 
 ![image](https://user-images.githubusercontent.com/72204360/198326003-93bb13d2-2142-4842-88a4-9b3851cb8240.png)
 
-If contract is not yet compiled, do go ahead with ```npx hardhat compile``` to compile contracts
-
-After which, start the server with ```node server```:
+If the contract has not been compiled, do go ahead with ```npx hardhat compile``` to compile the contracts. <br />
+After which, start the backend server with ```node server```:
 
 ![image](https://user-images.githubusercontent.com/72204360/198327240-791a0c68-c055-4346-8edf-712dadd7485e.png)
 
-Create another terminal for the client and to run the client use the command ```npm start```:
+Create another terminal for the client and run the client using the command ```npm start```:
 
 ![image](https://user-images.githubusercontent.com/72204360/198327541-e472636d-d9b0-4fe1-9309-f5bc976e73b1.png)
 
-The loaded webpage will automated deployment and deploy ERC20 tokens and an interacting contract under your accounts
+The loaded webpage will automate the deployment process and deploy your own ERC20 tokens and an interacting contract under your first account
 
 ![image](https://user-images.githubusercontent.com/72204360/198328305-90e5c56a-3276-4aeb-91f1-c2e411e104f6.png)
 
 # Diagrams
+## Overarching Structure of Contracts
 ![UML diagram](https://user-images.githubusercontent.com/72204360/198621815-3cba2152-5e8b-459a-bc6a-0a25c34371d2.jpg)
 
-![UML diagram (1)](https://user-images.githubusercontent.com/72204360/198623413-ec66c638-a8ce-41f6-aa46-7e4fc4ad3dd5.jpg)
-
+## Architecture Diagram
 ![UML diagram (2)](https://user-images.githubusercontent.com/72204360/198623467-44568541-cf72-409c-a379-219d96c7aefa.jpg)
+
+## Data Structure
+![UML diagram (1)](https://user-images.githubusercontent.com/72204360/198623413-ec66c638-a8ce-41f6-aa46-7e4fc4ad3dd5.jpg)
 
 # Feature Requirements
 1. We have created three ERC20 tokens GOLD(AU), SILVER(AG), BRONZE(CU)

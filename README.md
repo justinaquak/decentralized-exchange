@@ -47,6 +47,7 @@ npm start
 
 # Assumptions
 1. The application only supports up to 3 accounts and only three ERC20 tokens are created for this application ```GOLD, SILVER, BRONZE```
+2. No decimals are accepted in our token exchange (eg 1.1, 10.003 ...) 
 2. Private keys will be entrusted to the application. For users trying the testnet and mainnet do create an .env to store your private keys so that our application can retrieve your meta wallets / addresses
 3. For testing purposes and demonstration purposes we will be using the hardhat local network. The accounts are already fixed and preconfigured.
 4. If there is a need to restart any portion (eg. client or server), please restart **everything** ```npx hardhat node, client and server etc.``` for a smoother user experience. 
@@ -92,12 +93,16 @@ The loaded webpage will automate the deployment process and deploy your own ERC2
 ![UML diagram (1)](https://user-images.githubusercontent.com/72204360/198623413-ec66c638-a8ce-41f6-aa46-7e4fc4ad3dd5.jpg)
 
 # Feature Requirements
-1. We have created three ERC20 tokens GOLD(AU), SILVER(AG), BRONZE(CU)
+1. We have created three ERC20 tokens [GOLD(AU)](https://goerli.etherscan.io/tokens?q=0xEef920699f0f3D6C9a03346213C519a8F9A35376), [SILVER(AG)](https://goerli.etherscan.io/tokens?q=0x2496Cb30Df872EDDdc6b92dF526FDDd26A66AF7C), [BRONZE(CU)](https://goerli.etherscan.io/tokens?q=0x89637993E55c8f5F018987783014b1Ad54CbD07a) 
+
+![image_2022-10-29_20-47-13](https://user-images.githubusercontent.com/73157214/198839881-392034f1-e911-4f69-9ca3-464528977100.png)
+
+
 2. Submit buy and sell orders has been implemented in [limit orders](#limit-orders)
-3. Matched orders in the marketplace will be fulfilled fully or partially [limit orders](#limit-orders) and [market orders](#market-orders)
-4. Users will be able to cancel their orders [cancel order](#cancel-order)
-5. Batch execution
-6. Our conditional order involved time constraint in the contracts with a request [faucet](#faucet)
+3. Matched orders in the marketplace will be fulfilled fully or partially with [limit orders](#limit-orders) and [market orders](#market-orders)
+4. Users will be able to [cancel](#cancel-order) their orders and the locked funds will be dispensed
+5. Orders can be matched between 3 users with [batch execution](#batch-execution)
+6. Our [faucet request](#faucet) is a conditional order involving a time constraint
 
 # Faucet
 
@@ -134,6 +139,10 @@ For a sell order, the token on the left is the one we want to sell, and we are s
 # Market Orders
 
 For a market order, all you need to specify is the number of tokens, and the order will be fulfilled/partially fulfilled if there are suitable orders. 
+
+# Batch Execution
+
+
 
 ![image](https://user-images.githubusercontent.com/73157214/198350603-802bf9bd-ecc1-4614-bf9d-b86c925101a2.png)
 

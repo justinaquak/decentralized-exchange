@@ -171,7 +171,7 @@ function UserOrder(account, setAccountInfo, data, setData, setField) {
               deleteOrder(
                 record.type.toLowerCase() === "buy"
                   ? "buyOrder"
-                  : record.type === "sell"
+                  : record.type.toLowerCase() === "sell"
                   ? "sellOrder"
                   : "",
                 record.token,

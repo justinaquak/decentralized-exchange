@@ -13,6 +13,7 @@ A minimal viable Decentralized Exchange (DEX) on Ethereum and a simple front-end
 6. [Limit Orders](#limit-orders)
 7. [Market Orders](#market-orders)
 8. [Cancel Order](#cancel-order)
+9. [Limitations](#limitations)
 
 # How to Install and Run the Project
 - clone the project with:
@@ -161,4 +162,5 @@ After the order is cancelled, the locked up tokens are also returned to the user
 
 ![image](https://user-images.githubusercontent.com/73157214/198353346-acef55e6-0927-47e4-9344-b63593e4f9ec.png)
 
-
+# Limitations
+We would have liked to deploy our project on the Testnet, however, due to network congestion, even interacting with the contract required a few hours, and hence we decided that it was not viable for us to submit a project on Testnet. 

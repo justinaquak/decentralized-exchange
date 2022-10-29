@@ -9,4 +9,5 @@
 /backend/artifacts
 /backend/cache
 
+# thrash
 .bin

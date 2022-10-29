@@ -48,6 +48,7 @@ node server
 4. If there is a need to restart any portion (eg. client or server), please restart **everything** (npx hardhat node, client and server etc.) for a smoother user experience. 
 5. Three tokens have been supplied to the main owner account of 1,000,000 amount
 6. It can only support maximum of 3 accounts
+7. To simulate liquidity in the market, we set value to each of our tokens, namely GOLD at $100, SILVER at $10 and BRONZE at $1. 
 
 # Detailed Installation Guide
 ## For Testnet and Mainnet users

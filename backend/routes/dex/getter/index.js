@@ -189,15 +189,39 @@ async function getTokenPriceInfo(req, res) {
     gold.buyPrice = goldPriceInfo[0]
     gold.sellPrice = goldPriceInfo[1]
     gold.buyVolume = await getVolumeByPrice(goldPriceInfo[0], goldAddress, false)
+    if (gold.buyVolume == 0) {
+      gold.buyPrice = "No sell orders available"
+      gold.buyVolume = "No sell orders available"
+    }
     gold.sellVolume = await getVolumeByPrice(goldPriceInfo[1], goldAddress, true)
+    if (gold.sellVolume == 0) {
+      gold.sellPrice = "No buy orders available"
+      gold.sellVolume = "No buy orders available"
+    }
     silver.buyPrice = silverPriceInfo[0]
     silver.sellPrice = silverPriceInfo[1]
     silver.buyVolume = await getVolumeByPrice(silverPriceInfo[0], silverAddress, false)
+    if (silver.buyVolume == 0) {
+      silver.buyPrice = "No sell orders available"
+      silver.buyVolume = "No sell orders available"
+    }
     silver.sellVolume = await getVolumeByPrice(silverPriceInfo[1], silverAddress, true)
+    if (silver.sellVolume == 0) {
+      silver.sellPrice = "No buy orders available"
+      silver.sellVolume = "No buy orders available"
+    }
     bronze.buyPrice = bronzePriceInfo[0]
     bronze.sellPrice = bronzePriceInfo[1]
     bronze.buyVolume = await getVolumeByPrice(bronzePriceInfo[0], bronzeAddress, false)
+    if (bronze.buyVolume == 0) {
+      bronze.buyPrice = "No sell orders available"
+      bronze.buyVolume = "No sell orders available"
+    }
     bronze.sellVolume = await getVolumeByPrice(bronzePriceInfo[1], bronzeAddress, true)
+    if (bronze.sellVolume == 0) {
+      bronze.sellPrice = "No buy orders available"
+      bronze.sellVolume = "No buy orders available"
+    }
 
     return [gold, silver, bronze]
   }

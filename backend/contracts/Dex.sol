@@ -23,7 +23,6 @@ contract Dex {
     }
 
     struct Token {
-        address tokenContract;
         mapping(uint256 => OrderBook) buyOrderBook; // key is price
         uint256 maxBuyPrice;
         uint256 minBuyPrice;
@@ -35,10 +34,6 @@ contract Dex {
     }
 
     mapping(address => Token) tokenList; 
-
-    mapping(address => uint256) etherBalanceOfAddress;
-
-    mapping(address => string[]) tokensInAddress;    
 
     bool result;
 

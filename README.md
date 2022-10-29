@@ -91,11 +91,11 @@ The loaded webpage will automated deployment and deploy ERC20 tokens and an inte
 
 # Feature Requirements
 1. We have created three ERC20 tokens GOLD(AU), SILVER(AG), BRONZE(CU)
-2. Limit Order
-3. Match Order
-4. Support Cancelling Order
+2. Submit buy and sell orders has been implemented in [limit orders](#limit-orders)
+3. Matched orders in the marketplace will be fulfilled fully or partially [limit orders](#limit-orders) and [market orders](#market-orders)
+4. Users will be able to cancel their orders [cancel order](#cancel-order)
 5. Batch execution
-6. Conditional Order
+6. Our conditional order involved time constraint in the contracts with a request [faucet](#faucet)
 
 # Faucet
 

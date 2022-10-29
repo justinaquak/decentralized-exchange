@@ -64,6 +64,8 @@ async function contractInteractLogic(req, res) {
     // const silverSellOrders = await dexContract.getSellOrders(silverAddress);
     // console.log('\nSILVER BUY\n', silverBuyOrders)
     // console.log('\nSILVER SELL\n', silverSellOrders)
+    const buyTokenLimit = await dexContract.connect(owner).buyTokenLimit(goldAddress, silverAddress, 10, 1000, 100);
+    await buyTokenLimit.wait()
 
     // APPROVES AND REDUCE AND BALANCE
     // await approve.wait()

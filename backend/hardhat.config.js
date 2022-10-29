@@ -14,10 +14,6 @@ module.exports = {
       gas: 8e6,
       gasPrice: 8e9,
     },
-    ropsten: {
-      url: `https://ropsten.infura.io/v3/1d4b501412e44aae912bbcd054bba9c6`,
-      accounts: [process.env.META_PRIVATE_KEY_1, process.env.META_PRIVATE_KEY_2]
-    },
     localhost: {
       url: `http://127.0.0.1:8545/`,
       chainId: 31337,

@@ -30,9 +30,9 @@ function AccountInfo(accountInfo, setAccountInfo, account, setAccount) {
       .then((res) => {
         const temp = [
           res.data.address,
-          parseInt(res.data.gold).toLocaleString(),
-          parseInt(res.data.silver).toLocaleString(),
-          parseInt(res.data.bronze).toLocaleString(),
+          res.data.gold === "" ? 0: parseInt(res.data.gold).toLocaleString(),
+          res.data.silver === "" ? 0: parseInt(res.data.silver).toLocaleString(),
+          res.data.bronze === "" ? 0: parseInt(res.data.bronze).toLocaleString(),
         ];
         setAccountInfo(temp);
       })

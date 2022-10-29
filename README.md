@@ -11,38 +11,42 @@ git clone https://github.com/justinaquak/fyp-blockchain/ OR
 download zip
 ```
 - open project on Visual Studio Code
-- requires three terminals
 - npm install in frontend directory
 ```
 cd frontend
 npm install
-```
-- to start the client
-```
-npm start
 ```
 - npm install in backend directory
 ```
 cd backend
 npm install
 ```
-- to start server
+1. first terminal to start the hardhat local server in the backend directory
 ```
 npx hardhat node
+```
+2. second terminal to compile the contracts and start the backend server in the backend directory
+```
 npx hardhat compile
 node server
 ```
+3. third terminal to start the client in the frontend directory
+```
+npm start
+```
+
 # Table of Contents
 1. [Assumptions](#assumptions)
 2. [Detailed Installation Guide](#detailed-installation-guide) 
-3. [Diagrams](#diagram)
-4. [Faucet](#faucet)
-5. [Limit Orders](#limit-orders)
-6. [Market Orders](#market-orders)
-7. [Cancel Order](#cancel-order)
+3. [Diagrams](#diagrams)
+4. [Feature Requirements](#feature-requirements)
+5. [Faucet](#faucet)
+6. [Limit Orders](#limit-orders)
+7. [Market Orders](#market-orders)
+8. [Cancel Order](#cancel-order)
 
 # Assumptions
-1. Private keys will be entrusted to the application. For testnet and mainnet do create an .env to store your private keys so that our application can retrieve your meta wallets
+1. Private keys will be entrusted to the application. For testnet and mainnet do create an .env to store your private keys so that our application can retrieve your meta wallets / addresses
 2. For testing purposes we will be using hardhat local network. Accounts are fixed and preconfigured.
 3. Multiple terminals will be needed
 4. If there is a need to restart any portion (eg. client or server), please restart **everything** (npx hardhat node, client and server etc.) for a smoother user experience. 
@@ -52,7 +56,7 @@ node server
 
 # Detailed Installation Guide
 ## For Testnet and Mainnet users
-In the root of the backend directory create an .env file (for testnet and mainnet) for example:
+In the root of the backend directory create an ```.env``` file (for testnet and mainnet) for example:
 
 ![image](https://user-images.githubusercontent.com/72204360/198324490-12f56bad-6efd-49df-9aea-a375da170685.png)
 
@@ -65,6 +69,8 @@ Users must start the hardhat server using the ```npx hardhat node``` command, ac
 
 ![image](https://user-images.githubusercontent.com/72204360/198326003-93bb13d2-2142-4842-88a4-9b3851cb8240.png)
 
+If contract is not yet compiled, do go ahead with ```npx hardhat compile``` to compile contracts
+
 After which, start the server with ```node server```:
 
 ![image](https://user-images.githubusercontent.com/72204360/198327240-791a0c68-c055-4346-8edf-712dadd7485e.png)
@@ -73,7 +79,7 @@ Create another terminal for the client and to run the client use the command ```
 
 ![image](https://user-images.githubusercontent.com/72204360/198327541-e472636d-d9b0-4fe1-9309-f5bc976e73b1.png)
 
-The loaded webpage will auto deploy tokens and an interacting contract under your accounts
+The loaded webpage will automated deployment and deploy ERC20 tokens and an interacting contract under your accounts
 
 ![image](https://user-images.githubusercontent.com/72204360/198328305-90e5c56a-3276-4aeb-91f1-c2e411e104f6.png)
 
@@ -83,6 +89,14 @@ The loaded webpage will auto deploy tokens and an interacting contract under you
 ![UML diagram (1)](https://user-images.githubusercontent.com/72204360/198623413-ec66c638-a8ce-41f6-aa46-7e4fc4ad3dd5.jpg)
 
 ![UML diagram (2)](https://user-images.githubusercontent.com/72204360/198623467-44568541-cf72-409c-a379-219d96c7aefa.jpg)
+
+# Feature Requirements
+1. We have created three ERC20 tokens GOLD(AU), SILVER(AG), BRONZE(CU)
+2. Submit buy and sell orders has been implemented in [limit orders](#limit-orders)
+3. Matched orders in the marketplace will be fulfilled fully or partially [limit orders](#limit-orders) and [market orders](#market-orders)
+4. Users will be able to cancel their orders [cancel order](#cancel-order)
+5. Batch execution
+6. Our conditional order involved time constraint in the contracts with a request [faucet](#faucet)
 
 # Faucet
 

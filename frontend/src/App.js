@@ -11,11 +11,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route
-          exact
-          path="/"
-          element={<Loader init={init} setInit={setInit} />}
-        />
+        <Route exact path="/" element={<Loader init={init} setInit={setInit} />} />
         <Route exact path="/home" element={<Home />} />
       </Routes>
     </Router>

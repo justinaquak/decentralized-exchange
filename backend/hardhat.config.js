@@ -10,11 +10,11 @@ module.exports = {
     hardhat: {},
     goerli: {
       url: `https://goerli.infura.io/v3/aa3955c0486d4e6d9f784b5dd3e405c6`,
-      accounts: [
-        process.env.META_PRIVATE_KEY_1,
-        process.env.META_PRIVATE_KEY_2,
-        process.env.META_PRIVATE_KEY_3,
-      ],
+      // accounts: [
+      //   process.env.META_PRIVATE_KEY_1,
+      //   process.env.META_PRIVATE_KEY_2,
+      //   process.env.META_PRIVATE_KEY_3,
+      // ],
       gas: 8e6,
       gasPrice: 8e9,
       gasLimit: 1e10,

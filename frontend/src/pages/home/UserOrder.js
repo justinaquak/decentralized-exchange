@@ -30,13 +30,17 @@ function UserOrder(account, setAccountInfo, data, setData, setField) {
       .then((res) => {
         const temp = [
           res.data.address,
-          parseInt(res.data.gold).toLocaleString(),
-          parseInt(res.data.silver).toLocaleString(),
-          parseInt(res.data.bronze).toLocaleString(),
+          res.data.gold === "" ? 0 : parseInt(res.data.gold).toLocaleString(),
+          res.data.silver === ""
+            ? 0
+            : parseInt(res.data.silver).toLocaleString(),
+          res.data.bronze === ""
+            ? 0
+            : parseInt(res.data.bronze).toLocaleString(),
         ];
         setAccountInfo(temp);
       })
-      .catch((err) => message.error("Unable to get user information"));
+      .catch(() => message.error("Unable to get user account details"));
   };
 
   const getUserOrders = () => {
@@ -46,80 +50,32 @@ function UserOrder(account, setAccountInfo, data, setData, setField) {
         const temp = [];
         let index = 0;
         res.data.gold.buyOrders.map((item) => {
-          PushHelper(
-            temp,
-            index,
-            "Gold",
-            "Buy",
-            item.price,
-            item.volume,
-            item.token
-          );
+          PushHelper(temp, index, "Gold", "Buy", item.price, item.volume, item.token);
           index++;
         });
         res.data.gold.sellOrders.map((item) => {
-          PushHelper(
-            temp,
-            index,
-            "Gold",
-            "Sell",
-            item.price,
-            item.volume,
-            item.token
-          );
+          PushHelper(temp, index, "Gold", "Sell", item.price, item.volume, item.token);
           index++;
         });
         res.data.silver.buyOrders.map((item) => {
-          PushHelper(
-            temp,
-            index,
-            "Silver",
-            "Buy",
-            item.price,
-            item.volume,
-            item.token
-          );
+          PushHelper(temp, index, "Silver", "Buy", item.price, item.volume, item.token);
           index++;
         });
         res.data.silver.sellOrders.map((item) => {
-          PushHelper(
-            temp,
-            index,
-            "Silver",
-            "Sell",
-            item.price,
-            item.volume,
-            item.token
-          );
+          PushHelper(temp, index, "Silver", "Sell", item.price, item.volume, item.token);
           index++;
         });
         res.data.bronze.buyOrders.map((item) => {
-          PushHelper(
-            temp,
-            index,
-            "Bronze",
-            "Buy",
-            item.price,
-            item.volume,
-            item.token
-          );
+          PushHelper(temp, index, "Bronze", "Buy", item.price, item.volume, item.token);
           index++;
         });
         res.data.bronze.sellOrders.map((item) => {
-          PushHelper(
-            temp,
-            index,
-            "Bronze",
-            "Sell",
-            item.price,
-            item.volume,
-            item.token
-          );
+          PushHelper(temp, index, "Bronze", "Sell", item.price, item.volume, item.token);
           index++;
         });
         setData(temp);
       })
-      .catch((err) => message.error(err));
+      .catch(() => message.error("Unable to get user orders!"));
   };
 
   const getMinAndMax = () => {
@@ -135,12 +91,12 @@ function UserOrder(account, setAccountInfo, data, setData, setField) {
       )
       .then(() => {
         message.success("Successfully deleted orders");
-        getUserOrders();
         getUserInfo(account);
+        getUserOrders();
         getMinAndMax();
       })
       .catch(() => {
-        message.error("Unable to delete any records");
+        message.error("Unable to delete order");
       });
   };
 

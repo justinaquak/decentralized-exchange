@@ -30,13 +30,17 @@ function AccountInfo(accountInfo, setAccountInfo, account, setAccount) {
       .then((res) => {
         const temp = [
           res.data.address,
-          res.data.gold === "" ? 0: parseInt(res.data.gold).toLocaleString(),
-          res.data.silver === "" ? 0: parseInt(res.data.silver).toLocaleString(),
-          res.data.bronze === "" ? 0: parseInt(res.data.bronze).toLocaleString(),
+          res.data.gold === "" ? 0 : parseInt(res.data.gold).toLocaleString(),
+          res.data.silver === ""
+            ? 0
+            : parseInt(res.data.silver).toLocaleString(),
+          res.data.bronze === ""
+            ? 0
+            : parseInt(res.data.bronze).toLocaleString(),
         ];
         setAccountInfo(temp);
       })
-      .catch((err) => message.error('Unable to get user information'));
+      .catch(() => message.error("Unable to get user account details"));
   };
 
   const requestFaucet = (user) => {

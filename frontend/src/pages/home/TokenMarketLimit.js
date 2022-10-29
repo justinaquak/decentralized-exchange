@@ -10,7 +10,6 @@ import { TokenMarket } from "./TokenMarket";
 
 function TokenMarketLimit(account, setAccountInfo, setData, field, setField) {
   const [type, setType] = useState("buy");
-
   const [currency1, setCurrency1] = useState("GOLD");
   const [currency2, setCurrency2] = useState("");
   const [price, setPrice] = useState(0);
@@ -41,7 +40,7 @@ function TokenMarketLimit(account, setAccountInfo, setData, field, setField) {
         getUserOrders();
         getMinAndMax();
       })
-      .catch((err) => {
+      .catch(() => {
         message.error("Unable to transact right now, please try again");
       });
   };
@@ -61,7 +60,7 @@ function TokenMarketLimit(account, setAccountInfo, setData, field, setField) {
         getUserOrders();
         getMinAndMax();
       })
-      .catch((err) => {
+      .catch(() => {
         message.error("Unable to transact right now, please try again");
       });
   };
@@ -72,13 +71,17 @@ function TokenMarketLimit(account, setAccountInfo, setData, field, setField) {
       .then((res) => {
         const temp = [
           res.data.address,
-          parseInt(res.data.gold).toLocaleString(),
-          parseInt(res.data.silver).toLocaleString(),
-          parseInt(res.data.bronze).toLocaleString(),
+          res.data.gold === "" ? 0 : parseInt(res.data.gold).toLocaleString(),
+          res.data.silver === ""
+            ? 0
+            : parseInt(res.data.silver).toLocaleString(),
+          res.data.bronze === ""
+            ? 0
+            : parseInt(res.data.bronze).toLocaleString(),
         ];
         setAccountInfo(temp);
       })
-      .catch((err) => message.error("Unable to get user information"));
+      .catch(() => message.error("Unable to get user account details"));
   };
 
   const getUserOrders = () => {
@@ -88,80 +91,32 @@ function TokenMarketLimit(account, setAccountInfo, setData, field, setField) {
         const temp = [];
         let index = 0;
         res.data.gold.buyOrders.map((item) => {
-          PushHelper(
-            temp,
-            index,
-            "Gold",
-            "Buy",
-            item.price,
-            item.volume,
-            item.token
-          );
+          PushHelper(temp, index, "Gold", "Buy", item.price, item.volume, item.token);
           index++;
         });
         res.data.gold.sellOrders.map((item) => {
-          PushHelper(
-            temp,
-            index,
-            "Gold",
-            "Sell",
-            item.price,
-            item.volume,
-            item.token
-          );
+          PushHelper(temp, index, "Gold", "Sell", item.price, item.volume, item.token);
           index++;
         });
         res.data.silver.buyOrders.map((item) => {
-          PushHelper(
-            temp,
-            index,
-            "Silver",
-            "Buy",
-            item.price,
-            item.volume,
-            item.token
-          );
+          PushHelper(temp, index, "Silver", "Buy", item.price, item.volume, item.token);
           index++;
         });
         res.data.silver.sellOrders.map((item) => {
-          PushHelper(
-            temp,
-            index,
-            "Silver",
-            "Sell",
-            item.price,
-            item.volume,
-            item.token
-          );
+          PushHelper(temp, index, "Silver", "Sell", item.price, item.volume, item.token);
           index++;
         });
         res.data.bronze.buyOrders.map((item) => {
-          PushHelper(
-            temp,
-            index,
-            "Bronze",
-            "Buy",
-            item.price,
-            item.volume,
-            item.token
-          );
+          PushHelper(temp, index, "Bronze", "Buy", item.price, item.volume, item.token);
           index++;
         });
         res.data.bronze.sellOrders.map((item) => {
-          PushHelper(
-            temp,
-            index,
-            "Bronze",
-            "Sell",
-            item.price,
-            item.volume,
-            item.token
-          );
+          PushHelper(temp, index, "Bronze", "Sell", item.price, item.volume, item.token);
           index++;
         });
         setData(temp);
       })
-      .catch((err) => message.error(err));
+      .catch(() => message.error("Unable to get user orders!"));
   };
 
   return (
@@ -227,13 +182,7 @@ function TokenMarketLimit(account, setAccountInfo, setData, field, setField) {
               buyTokenLimitMarket(currency2, currency1, volume, account, price);
             }
             if (type === "sell") {
-              sellTokenLimitMarket(
-                currency2,
-                currency1,
-                volume,
-                account,
-                price
-              );
+              sellTokenLimitMarket(currency2, currency1, volume, account, price);
             }
           }}
         />

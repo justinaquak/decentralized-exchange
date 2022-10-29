@@ -9,6 +9,35 @@ import "../styles.css";
 export const exchangeRate = ["1 GOLD", "1 SILVER", "100 BRONZE"];
 export const exchangeRateValue = ["10 SILVER", "10 BRONZE", "1 GOLD"];
 
+const checkBuyExchange = (C1, C2, V1, setV2, setE) => {
+  if (
+    (C1 === "GOLD" && C2 === "SILVER") ||
+    (C1 === "SILVER" && C2 === "BRONZE")
+  ) {
+    setV2(V1 * 10);
+    setE(false);
+  }
+  if (C1 === "GOLD" && C2 === "BRONZE") {
+    setV2(V1 * 100);
+    setE(false);
+  }
+  if (
+    (C1 === "SILVER" && C2 === "GOLD") ||
+    (C1 === "BRONZE" && C2 === "SILVER")
+  ) {
+    if (V1 >= 10 && V1 % 10 === 0) {
+      setV2(V1 / 10);
+      setE(false);
+    } else setE(true);
+  }
+  if (C1 === "BRONZE" && C2 === "GOLD") {
+    if (V1 >= 100 && V1 % 100 === 0) {
+      setV2(V1 / 100);
+      setE(false);
+    } else setE(true);
+  }
+};
+
 function TokenMarket({ account, setAccountInfo, setData, setField }) {
   const [currency1, setCurrency1] = useState("GOLD");
   const [currency2, setCurrency2] = useState("");
@@ -16,35 +45,6 @@ function TokenMarket({ account, setAccountInfo, setData, setField }) {
   const [tabulate, setTabulate] = useState(0);
   const [type, setType] = useState("buy");
   const [volume, setVolume] = useState(0);
-
-  const checkBuyExchange = (C1, C2, V1, setV2, setE) => {
-    if (
-      (C1 === "GOLD" && C2 === "SILVER") ||
-      (C1 === "SILVER" && C2 === "BRONZE")
-    ) {
-      setV2(V1 * 10);
-      setE(false);
-    }
-    if (C1 === "GOLD" && C2 === "BRONZE") {
-      setV2(V1 * 100);
-      setE(false);
-    }
-    if (
-      (C1 === "SILVER" && C2 === "GOLD") ||
-      (C1 === "BRONZE" && C2 === "SILVER")
-    ) {
-      if (V1 >= 10 && V1 % 10 === 0) {
-        setV2(V1 / 10);
-        setE(false);
-      } else setE(true);
-    }
-    if (C1 === "BRONZE" && C2 === "GOLD") {
-      if (V1 >= 100 && V1 % 100 === 0) {
-        setV2(V1 / 100);
-        setE(false);
-      } else setE(true);
-    }
-  };
 
   const buyTokenMarket = (tokenA, tokenB, amount, user) => {
     axios
@@ -62,7 +62,7 @@ function TokenMarket({ account, setAccountInfo, setData, setField }) {
         getMinAndMax();
       })
       .catch(() => {
-        message.error("Transaction was not successful");
+        message.error("Transaction was not successful please try again");
       });
   };
 
@@ -82,7 +82,7 @@ function TokenMarket({ account, setAccountInfo, setData, setField }) {
         getMinAndMax();
       })
       .catch(() => {
-        message.error("Transaction was not successful");
+        message.error("Transaction was not successful please try again");
       });
   };
 
@@ -92,13 +92,17 @@ function TokenMarket({ account, setAccountInfo, setData, setField }) {
       .then((res) => {
         const temp = [
           res.data.address,
-          parseInt(res.data.gold).toLocaleString(),
-          parseInt(res.data.silver).toLocaleString(),
-          parseInt(res.data.bronze).toLocaleString(),
+          res.data.gold === "" ? 0 : parseInt(res.data.gold).toLocaleString(),
+          res.data.silver === ""
+            ? 0
+            : parseInt(res.data.silver).toLocaleString(),
+          res.data.bronze === ""
+            ? 0
+            : parseInt(res.data.bronze).toLocaleString(),
         ];
         setAccountInfo(temp);
       })
-      .catch((err) => message.error('Unable to get user information'));
+      .catch(() => message.error('Unable to get user account details'));
   };
 
   const getUserOrders = () => {
@@ -108,27 +112,27 @@ function TokenMarket({ account, setAccountInfo, setData, setField }) {
         const temp = [];
         let index = 0;
         res.data.gold.buyOrders.map((item) => {
-          PushHelper(temp, index, "Gold", "Buy", item.price, item.volume);
+          PushHelper(temp, index, "Gold", "Buy", item.price, item.volume, item.token);
           index++;
         });
         res.data.gold.sellOrders.map((item) => {
-          PushHelper(temp, index, "Gold", "Sell", item.price, item.volume);
+          PushHelper(temp, index, "Gold", "Sell", item.price, item.volume, item.token);
           index++;
         });
         res.data.silver.buyOrders.map((item) => {
-          PushHelper(temp, index, "Silver", "Buy", item.price, item.volume);
+          PushHelper(temp, index, "Silver", "Buy", item.price, item.volume, item.token);
           index++;
         });
         res.data.silver.sellOrders.map((item) => {
-          PushHelper(temp, index, "Silver", "Sell", item.price, item.volume);
+          PushHelper(temp, index, "Silver", "Sell", item.price, item.volume, item.token);
           index++;
         });
         res.data.bronze.buyOrders.map((item) => {
-          PushHelper(temp, index, "Bronze", "Buy", item.price, item.volume);
+          PushHelper(temp, index, "Bronze", "Buy", item.price, item.volume, item.token);
           index++;
         });
         res.data.bronze.sellOrders.map((item) => {
-          PushHelper(temp, index, "Bronze", "Sell", item.price, item.volume);
+          PushHelper(temp, index, "Bronze", "Sell", item.price, item.volume, item.token);
           index++;
         });
         setData(temp);

@@ -140,13 +140,14 @@ For a sell order, the token on the left is the one we want to sell, and we are s
 
 For a market order, all you need to specify is the number of tokens, and the order will be fulfilled/partially fulfilled if there are suitable orders. 
 
-# Batch Execution
-
-
-
 ![image](https://user-images.githubusercontent.com/73157214/198350603-802bf9bd-ecc1-4614-bf9d-b86c925101a2.png)
 
 The exchange will also preemptively calculate the amount of tokens you would need in order to exchange for your wanted tokens.
+
+# Batch Execution
+![image](https://user-images.githubusercontent.com/73157214/198841178-65c8b5eb-27a5-4fa3-bc2f-b7471beb5e75.png)
+
+https://user-images.githubusercontent.com/73157214/198841201-81dc3a9d-a082-4995-98fb-91c292e8b935.mp4
 
 # Cancel Order
 
